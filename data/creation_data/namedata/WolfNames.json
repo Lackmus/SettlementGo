@@ -1,0 +1,5 @@
+{
+    "name": "WolfNames",
+    "forenames":        ["Luna", "Shadow", "Alpha", "Fang", "Aurora", "Hunter", "Raven", "Blaze", "Storm", "Saber", "Willow", "Kai", "Scarlet", "Thunder", "Rogue", "Loki", "Nova", "Arrow", "Winter", "Ash", "Zara", "Ragnar", "Mystic", "Zephyr", "Lobo", "Skylar", "Riley", "Aries", "Rusty", "Lupin"],
+    "surnames":         ["Moonshadow", "Howlstrom", "Silvermane", "Winterfang", "Stormcaller", "Frostbite", "Wildheart", "Bloodmoon", "Ironclaw", "Swiftstrike", "Darkthorn", "Whitewolf", "Ravenpaw", "Shadowfang", "Stormrunner", "Nightshade", "Blackmane", "Ashenfur", "Starkiller", "Blazefang", "Moonchaser", "Thunderstrike", "Grimmjaw", "Silentpelt", "Steelclaw", "Savageheart", "Moonrunner", "Shadowtail", "Stormblade", "Lunaris", "Duskfang"]
+}

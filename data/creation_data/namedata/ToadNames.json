@@ -1,0 +1,27 @@
+{
+    "name": "ToadNames",
+    "forenames": [
+        "Croak",
+        "Ribbit",
+        "Moss",
+        "Boggy",
+        "Mudfoot",
+        "Thorn",
+        "Hopper",
+        "Wart",
+        "Pebble",
+        "Damp"
+    ],
+    "surnames": [
+        "Bogwalker",
+        "Swamphopper",
+        "Mudskin",
+        "Thickettoad",
+        "Froggleton",
+        "Puddlefoot",
+        "Raincaller",
+        "Lilycroak",
+        "Mirethroat",
+        "Rivermuck"
+    ]
+}

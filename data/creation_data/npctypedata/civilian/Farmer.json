@@ -1,0 +1,33 @@
+{
+    "name": "Farmer",
+    "stats": [
+        "farming",
+        "strength"
+    ],
+    "equipmentOptions": {
+        "tools": [
+            "Hoe",
+            "Watering Can",
+            "Scythe",
+            "Axe",
+            "Shovel",
+            "Pitchfork",
+            "Sickle",
+            "Wheelbarrow"
+        ],
+        "clothing": [
+            "T-shirt and Jeans",
+            "Overalls",
+            "Farmers Hat and Boots",
+            "Wool Sweater and Scarf",
+            "Raincoat"
+        ],
+        "accessories": [
+            "Gloves",
+            "Bandana",
+            "Sunglasses",
+            "Tool Belt",
+            "Hat"
+        ]
+    }
+}

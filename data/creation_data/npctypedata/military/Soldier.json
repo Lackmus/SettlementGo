@@ -1,0 +1,34 @@
+{
+    "name": "Soldier",
+    "stats": [
+        "combat",
+        "strength",
+        "defense"
+    ],
+    "equipmentOptions": {
+        "weapons": [
+            "Longsword",
+            "Warhammer",
+            "Battle Axe",
+            "Spear",
+            "Mace",
+            "Bow and Arrows",
+            "Dagger",
+            "Flail"
+        ],
+        "armor": [
+            "Chainmail Hauberk",
+            "Plate Armor",
+            "Leather Jerkin",
+            "Gambeson",
+            "Brigandine"
+        ],
+        "accessories": [
+            "Helmet",
+            "Shield",
+            "Gauntlets",
+            "Cloak",
+            "Scabbard"
+        ]
+    }
+}

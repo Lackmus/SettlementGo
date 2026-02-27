@@ -1,0 +1,31 @@
+{
+    "name": "Archer",
+    "stats": [
+        "combat",
+        "awareness",
+        "precision"
+    ],
+    "equipmentOptions": {
+        "weapons": [
+            "Longbow",
+            "Recurve Bow",
+            "Shortbow",
+            "Crossbow",
+            "Hunting Bow"
+        ],
+        "armor": [
+            "Leather Jerkin",
+            "Padded Gambeson",
+            "Studded Leather",
+            "Light Brigandine",
+            "Reinforced Cloak"
+        ],
+        "accessories": [
+            "Quiver",
+            "Arm Guard",
+            "Finger Tabs",
+            "Hood",
+            "Utility Belt"
+        ]
+    }
+}

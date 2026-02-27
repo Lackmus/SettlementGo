@@ -1,0 +1,31 @@
+{
+    "name": "Healer",
+    "stats": [
+        "medicine",
+        "empathy",
+        "focus"
+    ],
+    "equipmentOptions": {
+        "tools": [
+            "Herbal Poultice Kit",
+            "Bandage Roll",
+            "Mortar and Pestle",
+            "Medical Satchel",
+            "Needle and Thread"
+        ],
+        "clothing": [
+            "Clean Linen Robes",
+            "Practical Tunic",
+            "Apron and Sleeves",
+            "Travel Healer Cloak",
+            "Simple Work Garb"
+        ],
+        "accessories": [
+            "Gloves",
+            "Small Vial Case",
+            "Face Mask",
+            "Belt Pouch",
+            "Healing Charm"
+        ]
+    }
+}

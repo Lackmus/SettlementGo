@@ -1,0 +1,31 @@
+{
+    "name": "Guard",
+    "stats": [
+        "defense",
+        "combat",
+        "discipline"
+    ],
+    "equipmentOptions": {
+        "weapons": [
+            "Spear",
+            "Longsword",
+            "Mace",
+            "Halberd",
+            "Short Sword"
+        ],
+        "armor": [
+            "Chainmail",
+            "Brigandine",
+            "Scale Armor",
+            "Breastplate",
+            "Reinforced Gambeson"
+        ],
+        "accessories": [
+            "Tower Shield",
+            "Helmet",
+            "Gauntlets",
+            "Patrol Lantern",
+            "Badge"
+        ]
+    }
+}

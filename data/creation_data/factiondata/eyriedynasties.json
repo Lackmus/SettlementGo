@@ -1,0 +1,13 @@
+{
+    "name": "Eyrie Dynasties",
+    "speciesList": [
+        "Chicken",
+        "Owl",
+        "Wren",
+        "Eagle",
+        "Falcon",
+        "Hawk",
+        "Raven",
+        "Sparrow"
+    ]
+}

@@ -1,0 +1,27 @@
+{   
+    "name": "ChickenNames",
+    "forenames": [
+        "Cluckers",
+        "Feathers",
+        "Nugget",
+        "Henrietta",
+        "Pecky",
+        "Drumstick",
+        "Goldie",
+        "Eggsy",
+        "Pip",
+        "Crispy"
+    ],
+    "surnames": [
+        "Beakley",
+        "Clucklesworth",
+        "Featherstone",
+        "Eggleston",
+        "Peckington",
+        "Roosterson",
+        "Scrambleton",
+        "Wingfield",
+        "Nestleton",
+        "Hennings"
+    ]
+}

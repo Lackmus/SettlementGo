@@ -1,0 +1,27 @@
+{
+    "name":"WrenNames",
+    "forenames": [
+        "Tweet",
+        "Chirp",
+        "Gale",
+        "Feather",
+        "Sky",
+        "Zephyr",
+        "Wisp",
+        "Flutter",
+        "Echo",
+        "Lark"
+    ],
+    "surnames": [
+        "Skycaller",
+        "Windwhisper",
+        "Featherbreeze",
+        "Dawnchime",
+        "Cloudflight",
+        "Softsong",
+        "Stormwing",
+        "Echochirp",
+        "Zephyrplume",
+        "Airywhistle"
+    ]
+}

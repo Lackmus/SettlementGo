@@ -1,0 +1,31 @@
+{
+    "name": "Merchant",
+    "stats": [
+        "bartering",
+        "insight",
+        "awareness"
+    ],
+    "equipmentOptions": {
+        "tools": [
+            "Ledger Book",
+            "Abacus",
+            "Scale Weights",
+            "Trade Satchel",
+            "Wax Seal Kit"
+        ],
+        "clothing": [
+            "Fine Vest and Shirt",
+            "Travel Cloak",
+            "Tailored Tunic",
+            "Wool Coat",
+            "Silk Scarf"
+        ],
+        "accessories": [
+            "Coin Purse",
+            "Signet Ring",
+            "Pocket Watch",
+            "Key Ring",
+            "Writing Quill"
+        ]
+    }
+}

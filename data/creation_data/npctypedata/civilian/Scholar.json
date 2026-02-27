@@ -1,0 +1,31 @@
+{
+    "name": "Scholar",
+    "stats": [
+        "knowledge",
+        "analysis",
+        "memory"
+    ],
+    "equipmentOptions": {
+        "tools": [
+            "Notebook",
+            "Reference Scroll",
+            "Ink and Quill",
+            "Magnifying Lens",
+            "Book Satchel"
+        ],
+        "clothing": [
+            "Academic Robes",
+            "Plain Tunic and Cloak",
+            "Buttoned Coat",
+            "Wool Cardigan",
+            "Simple Scholar Garb"
+        ],
+        "accessories": [
+            "Reading Glasses",
+            "Bookmark Ribbon",
+            "Seal Stamp",
+            "Portable Candle",
+            "Writing Gloves"
+        ]
+    }
+}

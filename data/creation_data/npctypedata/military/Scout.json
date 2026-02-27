@@ -1,0 +1,31 @@
+{
+    "name": "Scout",
+    "stats": [
+        "stealth",
+        "speed",
+        "awareness"
+    ],
+    "equipmentOptions": {
+        "weapons": [
+            "Shortsword",
+            "Dagger Pair",
+            "Sling",
+            "Short Bow",
+            "Hand Axe"
+        ],
+        "armor": [
+            "Light Leather Armor",
+            "Cloaked Gambeson",
+            "Travel Jerkin",
+            "Padded Vest",
+            "Camouflage Cloak"
+        ],
+        "accessories": [
+            "Map Case",
+            "Signal Whistle",
+            "Rope Coil",
+            "Compass",
+            "Trail Markers"
+        ]
+    }
+}

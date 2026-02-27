@@ -1,0 +1,31 @@
+{
+    "name": "Captain",
+    "stats": [
+        "leadership",
+        "combat",
+        "strategy"
+    ],
+    "equipmentOptions": {
+        "weapons": [
+            "Officer Sword",
+            "Warhammer",
+            "Ceremonial Spear",
+            "Battle Axe",
+            "Sabre"
+        ],
+        "armor": [
+            "Decorated Breastplate",
+            "Commander's Chainmail",
+            "Brigandine Coat",
+            "Reinforced Plate",
+            "Officer's Gambeson"
+        ],
+        "accessories": [
+            "Command Cloak",
+            "Tactical Map",
+            "Signal Horn",
+            "Insignia Pin",
+            "Dispatch Satchel"
+        ]
+    }
+}

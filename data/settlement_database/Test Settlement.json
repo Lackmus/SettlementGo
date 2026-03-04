@@ -1,0 +1,10 @@
+{
+  "id": 0,
+  "npcs": null,
+  "name": "Test Settlement",
+  "faction": "Test Faction",
+  "xCoord": 10,
+  "yCoord": 20,
+  "description": "A test settlement for demonstration purposes.",
+  "population": 100
+}

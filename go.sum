@@ -1,0 +1,4 @@
+github.com/lackmus/npcgengo v0.0.0-20260303151325-123014b4af55 h1:tna89ZUS4cqqHFHyXk5WppYmscdezO3JTuNWhLGg7kw=
+github.com/lackmus/npcgengo v0.0.0-20260303151325-123014b4af55/go.mod h1:7lsKpxniFgvVAw1kVvj1oEohlPo/X2DIbtXwK1L380k=
+golang.org/x/net v0.50.0 h1:ucWh9eiCGyDR3vtzso0WMQinm2Dnt8cFMuQa9K33J60=
+golang.org/x/net v0.50.0/go.mod h1:UgoSli3F/pBgdJBHCTc+tp3gmrU4XswgGRgtnwWTfyM=

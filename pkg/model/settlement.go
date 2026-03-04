@@ -1,8 +1,9 @@
 package model
 
+import "fmt"
+
 // settlement struct
 type Settlement struct {
-	ID          int64    `json:"id"`
 	Npcs        []string `json:"npcs"`
 	Name        string   `json:"name"`
 	Faction     string   `json:"faction"`
@@ -12,19 +13,24 @@ type Settlement struct {
 	Population  int      `json:"population"`
 }
 
-func (s Settlement) AddNpc(n string) Settlement {
-	s.Npcs = append(s.Npcs, n)
-	return s
+func (s *Settlement) AddNpc(npc string) {
+	if npc == "" {
+		fmt.Println("Cannot add empty NPC to settlement.")
+		return
+	}
+	if s.Npcs == nil {
+		s.Npcs = []string{}
+	}
+	s.Npcs = append(s.Npcs, npc)
 }
 
-func (s Settlement) RemoveNpc(target string) Settlement {
+func (s *Settlement) RemoveNpc(target string) {
 	for i, n := range s.Npcs {
 		if n == target {
 			s.Npcs = append(s.Npcs[:i], s.Npcs[i+1:]...)
 			break
 		}
 	}
-	return s
 }
 
 func (s Settlement) PrintSettlement() {
@@ -32,4 +38,7 @@ func (s Settlement) PrintSettlement() {
 	println("Faction:", s.Faction)
 	println("Coordinates:", s.XCoord, s.YCoord)
 	println("NPCs:")
+	for _, npc := range s.Npcs {
+		println(" -", npc)
+	}
 }

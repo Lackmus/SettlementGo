@@ -1,4 +1,10 @@
-github.com/lackmus/npcgengo v0.0.0-20260303151325-123014b4af55 h1:tna89ZUS4cqqHFHyXk5WppYmscdezO3JTuNWhLGg7kw=
-github.com/lackmus/npcgengo v0.0.0-20260303151325-123014b4af55/go.mod h1:7lsKpxniFgvVAw1kVvj1oEohlPo/X2DIbtXwK1L380k=
+github.com/lackmus/npcgengo v0.0.0-20260303162142-c7aa1c045f7c h1:vbP8vidclFiN8kdiDnee25ik/0vR8ag7l+8NtapqD1Q=
+github.com/lackmus/npcgengo v0.0.0-20260303162142-c7aa1c045f7c/go.mod h1:7lsKpxniFgvVAw1kVvj1oEohlPo/X2DIbtXwK1L380k=
+golang.org/x/crypto v0.48.0 h1:/VRzVqiRSggnhY7gNRxPauEQ5Drw9haKdM0jqfcCFts=
+golang.org/x/crypto v0.48.0/go.mod h1:r0kV5h3qnFPlQnBSrULhlsRfryS2pmewsg+XfMgkVos=
 golang.org/x/net v0.50.0 h1:ucWh9eiCGyDR3vtzso0WMQinm2Dnt8cFMuQa9K33J60=
 golang.org/x/net v0.50.0/go.mod h1:UgoSli3F/pBgdJBHCTc+tp3gmrU4XswgGRgtnwWTfyM=
+golang.org/x/sys v0.41.0 h1:Ivj+2Cp/ylzLiEU89QhWblYnOE9zerudt9Ftecq2C6k=
+golang.org/x/sys v0.41.0/go.mod h1:OgkHotnGiDImocRcuBABYBEXf8A9a87e/uXjp9XT3ks=
+golang.org/x/text v0.34.0 h1:oL/Qq0Kdaqxa1KbNeMKwQq0reLCCaFtqu2eNuSeNHbk=
+golang.org/x/text v0.34.0/go.mod h1:homfLqTYRFyVYemLBFl5GgL/DWEiH5wcsQ5gSh1yziA=

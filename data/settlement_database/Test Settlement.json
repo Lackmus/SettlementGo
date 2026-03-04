@@ -1,6 +1,7 @@
 {
-  "id": 0,
-  "npcs": null,
+  "npcs": [
+    "0"
+  ],
   "name": "Test Settlement",
   "faction": "Test Faction",
   "xCoord": 10,

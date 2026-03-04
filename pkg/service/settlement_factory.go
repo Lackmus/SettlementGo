@@ -10,5 +10,6 @@ func CreateSettlement(name string, description string, population int, faction s
 		Faction:     faction,
 		XCoord:      xCoord,
 		YCoord:      yCoord,
+		Npcs:        []string{},
 	}
 }

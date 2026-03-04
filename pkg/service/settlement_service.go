@@ -24,6 +24,12 @@ func NewSettlementService(storage shared.SettlementStorage) (*SettlementService,
 
 // add
 func (s *SettlementService) AddSettlement(settlement model.Settlement) error {
+	for i, existing := range s.Settlements {
+		if existing.Name == settlement.Name {
+			s.Settlements[i] = settlement
+			return s.Storage.SaveSettlement(settlement)
+		}
+	}
 	s.Settlements = append(s.Settlements, settlement)
 	return s.Storage.SaveSettlement(settlement)
 }

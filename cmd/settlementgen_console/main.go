@@ -41,24 +41,32 @@ func main() {
 		10, 20,
 	)
 
+	settlementB := service.CreateSettlement(
+		"Another Settlement",
+		"Another test settlement for demonstration purposes.",
+		200,
+		"Another Faction",
+		30, 40,
+	)
+
 	npc, err = npcGenerator.NPCListController.GetNPCByID("0")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Generated NPC ID %s:\n", npc.ID)
-
+	fmt.Println("Adding NPC to settlements...")
 	settlementA.AddNpc(npc.ID)
+	settlementB.AddNpc(npc.ID)
 
-	fmt.Printf("Settlement '%s' after adding NPC:\n", settlementA.Name)
-	for _, npcID := range settlementA.Npcs {
-		fmt.Printf("  NPC ID: %s\n", npcID)
-	}
-
+	fmt.Println("Adding settlements...")
+	fmt.Println("SettlementA:")
 	controller.AddSettlement(settlementA)
+	fmt.Println("SettlementB:")
+	controller.AddSettlement(settlementB)
 
+	fmt.Println("Deleting all settlements...")
 	npcGenerator.NPCListController.DeleteAllNPCs()
 
-	//controller.RemoveSettlement("Test Settlement")
+	controller.RemoveAllSettlements()
 
 }

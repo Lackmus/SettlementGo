@@ -54,6 +54,11 @@ func (c *SettlementListController) RemoveSettlement(name string) {
 	c.NotifyObservers()
 }
 
+func (c *SettlementListController) RemoveAllSettlements() {
+	c.SettlementService.DeleteAllSettlements()
+	c.NotifyObservers()
+}
+
 func (c *SettlementListController) GetSettlement(name string) (model.Settlement, error) {
 	return c.SettlementService.GetSettlement(name)
 }

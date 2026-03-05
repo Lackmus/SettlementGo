@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	settlementDir = "./data/settlement_database"
+	npcDataDir     = "./data"
+	settlementDir  = "./data/settlement_database"
+	settlementData = "./data/settlement_data"
 )
 
 func main() {
@@ -20,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	npcGenerator, err := npcgengo.NewNPCGenWithDataDir("./data")
+	npcGenerator, err := npcgengo.NewNPCGenWithDataDir(npcDataDir)
 	if err != nil {
 		panic(err)
 	}
@@ -31,37 +33,26 @@ func main() {
 	}
 
 	viewer := console.NewConsoleView()
-	controller := controllers.NewSettlementListController(*settlementService, viewer)
 
-	settlementA := service.CreateSettlement(
-		"Test Settlement",
-		"A test settlement for demonstration purposes.",
-		100,
-		"Test Faction",
-		10, 20,
-	)
+	loaders := loaders.NewJSONSettlementConfigLoader(settlementData)
+	factions := npcGenerator.GetFactions()
+	settlementCreationSupplier := service.NewSettlementCreationSupplier(loaders, factions)
 
-	settlementB := service.CreateSettlement(
-		"Another Settlement",
-		"Another test settlement for demonstration purposes.",
-		200,
-		"Another Faction",
-		30, 40,
-	)
+	controller := controllers.NewSettlementListController(*settlementService, viewer, *settlementCreationSupplier)
 
 	npc, err = npcGenerator.NPCListController.GetNPCByID("0")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Adding NPC to settlements...")
+	settlementA := service.CreateRandomSettlement(*settlementCreationSupplier)
+	settlementB := service.CreateRandomSettlement(*settlementCreationSupplier)
 	settlementA.AddNpc(npc.ID)
 	settlementB.AddNpc(npc.ID)
 
 	fmt.Println("Adding settlements...")
-	fmt.Println("SettlementA:")
+	controller.CreateRandomSettlement()
 	controller.AddSettlement(settlementA)
-	fmt.Println("SettlementB:")
 	controller.AddSettlement(settlementB)
 
 	fmt.Println("Deleting all settlements...")

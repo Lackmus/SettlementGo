@@ -26,6 +26,7 @@ func (cv *ConsoleView) DisplaySettlements() {
 		fmt.Println("No settlements to display.")
 		return
 	}
+	println("\nSettlements\n")
 	for _, settlement := range cv.settlements {
 		settlement.PrintSettlement()
 		println("-----")

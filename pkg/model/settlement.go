@@ -4,13 +4,13 @@ import "fmt"
 
 // settlement struct
 type Settlement struct {
-	Npcs        []string `json:"npcs"`
-	Name        string   `json:"name"`
-	Faction     string   `json:"faction"`
-	XCoord      int      `json:"xCoord"`
-	YCoord      int      `json:"yCoord"`
-	Description string   `json:"description"`
-	Population  int      `json:"population"`
+	Npcs       []string `json:"npcs"`
+	Name       string   `json:"name"`
+	Faction    string   `json:"faction"`
+	XCoord     int      `json:"xCoord"`
+	YCoord     int      `json:"yCoord"`
+	Population int      `json:"population"`
+	Notes      string   `json:"notes"`
 }
 
 func (s *Settlement) AddNpc(npc string) {
@@ -41,4 +41,5 @@ func (s Settlement) PrintSettlement() {
 	for _, npc := range s.Npcs {
 		println(" -", npc)
 	}
+	println("Notes:", s.Notes)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/lackmus/npcgengo"
 	"github.com/lackmus/settlementgengo/internal/app/controllers"
 	"github.com/lackmus/settlementgengo/internal/platform/loaders"
+	"github.com/lackmus/settlementgengo/pkg/model"
 	"github.com/lackmus/settlementgengo/pkg/service"
 )
 
@@ -25,24 +26,36 @@ func NewSettlementGenApp() *SettlementGenApp {
 }
 
 func NewSettlementGenAppWithDataDir(dir string) *SettlementGenApp {
-	npcGenerator, err := npcgengo.NewNPCGenWithDataDir(defaultDataDir)
+	npcGenerator, err := npcgengo.NewNPCGenWithDataDir(dir)
 	if err != nil {
 		panic(err)
 	}
-	settlemenService, err := service.NewSettlementService(loaders.NewJSONSettlementStorage(defaultDataDir + settlementDir))
+	settlementService, err := service.NewSettlementService(loaders.NewJSONSettlementStorage(dir + settlementDir))
 	if err != nil {
 		panic(err)
 	}
-	loaders := loaders.NewJSONSettlementConfigLoader(defaultDataDir + settlementData)
+	loaders := loaders.NewJSONSettlementConfigLoader(dir + settlementData)
 	factions := npcGenerator.GetFactions()
 	settlementCreationSupplier := service.NewSettlementCreationSupplier(loaders, factions)
-	settlementController := controllers.NewSettlementListController(*settlemenService, *settlementCreationSupplier)
+	settlementController := controllers.NewSettlementListController(*settlementService, *settlementCreationSupplier, *npcGenerator)
 
 	app := &SettlementGenApp{
 		NpcGenerator:               *npcGenerator,
-		SettlementService:          settlemenService,
+		SettlementService:          settlementService,
 		SettlementCreationSupplier: settlementCreationSupplier,
 		SettlementController:       settlementController,
 	}
 	return app
+}
+
+// CreateRandomSettlementWithNPCs creates and saves a random settlement,
+// then generates and attaches npcCount random NPC IDs to it.
+func (a *SettlementGenApp) CreateRandomSettlementWithNPCs(npcCount int) (model.Settlement, error) {
+	return a.SettlementController.CreateRandomSettlementWithNPCs(npcCount)
+}
+
+// AddRandomNPCsToSettlement generates npcCount random NPCs and appends their IDs
+// to the named settlement. The updated settlement is persisted via controller update.
+func (a *SettlementGenApp) AddRandomNPCsToSettlement(name string, npcCount int) (model.Settlement, error) {
+	return a.SettlementController.AddRandomNPCsToSettlement(name, npcCount)
 }

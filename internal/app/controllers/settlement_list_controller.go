@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"fmt"
+
+	"github.com/lackmus/npcgengo"
 	"github.com/lackmus/settlementgengo/pkg/model"
 	"github.com/lackmus/settlementgengo/pkg/service"
 	"github.com/lackmus/settlementgengo/pkg/shared"
@@ -9,16 +12,19 @@ import (
 type SettlementListController struct {
 	SettlementService          service.SettlementService
 	SettlementCreationSupplier service.SettlementCreationSupplier
+	npcGenerator               npcgengo.NPCGen
 	observers                  []shared.SettlementObserver
 }
 
 func NewSettlementListController(
 	settlementService service.SettlementService,
 	settlementCreationsupplier service.SettlementCreationSupplier,
+	npcGenerator npcgengo.NPCGen,
 ) *SettlementListController {
 	settlementListController := &SettlementListController{
 		SettlementService:          settlementService,
 		SettlementCreationSupplier: settlementCreationsupplier,
+		npcGenerator:               npcGenerator,
 		observers:                  []shared.SettlementObserver{},
 	}
 	return settlementListController
@@ -57,6 +63,51 @@ func (c *SettlementListController) CreateSettlement(name string, faction string)
 func (c *SettlementListController) CreateRandomSettlement() (model.Settlement, error) {
 	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
 	return c.AddSettlement(settlement)
+}
+
+func (c *SettlementListController) CreateRandomSettlementWithNPCs(npcCount int) (model.Settlement, error) {
+	if npcCount < 0 {
+		return model.Settlement{}, fmt.Errorf("npcCount cannot be negative")
+	}
+
+	settlement, err := c.CreateRandomSettlement()
+	if err != nil {
+		return model.Settlement{}, err
+	}
+
+	if npcCount == 0 {
+		return settlement, nil
+	}
+
+	return c.AddRandomNPCsToSettlement(settlement.Name, npcCount)
+}
+
+func (c *SettlementListController) AddRandomNPCsToSettlement(name string, npcCount int) (model.Settlement, error) {
+	if npcCount < 0 {
+		return model.Settlement{}, fmt.Errorf("npcCount cannot be negative")
+	}
+	if c.npcGenerator.NPCListController == nil {
+		return model.Settlement{}, fmt.Errorf("npc generator is not configured")
+	}
+
+	settlement, err := c.GetSettlement(name)
+	if err != nil {
+		return model.Settlement{}, err
+	}
+
+	for i := 0; i < npcCount; i++ {
+		npc, genErr := c.npcGenerator.NPCListController.CreateRandomNPC()
+		if genErr != nil {
+			return model.Settlement{}, genErr
+		}
+		settlement.AddNpc(npc.ID)
+	}
+
+	if err := c.UpdateSettlement(settlement); err != nil {
+		return model.Settlement{}, err
+	}
+
+	return settlement, nil
 }
 
 func (c *SettlementListController) AddSettlement(settlement model.Settlement) (model.Settlement, error) {

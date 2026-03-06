@@ -4,37 +4,48 @@ import (
 	"fmt"
 
 	"github.com/lackmus/settlementgengo/internal/app"
-	"github.com/lackmus/settlementgengo/pkg/service"
 	"github.com/lackmus/settlementgengo/ui/console"
 )
 
 func main() {
-	settlemntGenApp := app.NewSettlementGenApp()
+	settlementGenApp := app.NewSettlementGenApp()
 
-	npcGenerator := settlemntGenApp.NpcGenerator
-	controller := settlemntGenApp.SettlementController
-	settlementCreationSupplier := settlemntGenApp.SettlementCreationSupplier
+	npcGenerator := settlementGenApp.NpcGenerator
+	controller := settlementGenApp.SettlementController
 
 	settlementViewer := console.NewConsoleView(controller)
 	controller.InitView(settlementViewer)
 
-	npc, err := npcGenerator.NPCListController.CreateRandomNPC()
+	settlementA, err := controller.CreateRandomSettlementWithNPCs(2)
+	if err != nil {
+		panic(err)
+	}
+	settlementB, err := controller.CreateRandomSettlementWithNPCs(2)
 	if err != nil {
 		panic(err)
 	}
 
-	settlementA := service.CreateRandomSettlement(*settlementCreationSupplier)
-	settlementB := service.CreateRandomSettlement(*settlementCreationSupplier)
-	controller.CreateRandomSettlement()
-	settlementA.AddNpc(npc.ID)
-	settlementB.AddNpc(npc.ID)
+	fmt.Println("Created settlements with generated NPCs...")
+	fmt.Printf("Created: %s, NPCs: %v\n", settlementA.Name, settlementA.Npcs)
+	fmt.Printf("Created: %s, NPCs: %v\n", settlementB.Name, settlementB.Npcs)
 
-	fmt.Println("Adding settlements...")
-	if _, err := controller.AddSettlement(settlementA); err != nil {
-		panic(err)
+	fmt.Println("Current settlements and their NPCs...")
+	settlements := controller.SettlementService.Settlements
+	for _, settlement := range settlements {
+		fmt.Printf("Settlement: %s, NPCs: %v\n", settlement.Name, settlement.Npcs)
 	}
-	if _, err := controller.AddSettlement(settlementB); err != nil {
-		panic(err)
+
+	fmt.Println("Loading settlements and their NPCs...")
+	for _, settlement := range settlements {
+		fmt.Printf("Settlement: %s\n", settlement.Name)
+		for _, npcID := range settlement.Npcs {
+			npc, err := npcGenerator.NPCListController.GetNPCByID(npcID)
+			if err != nil {
+				fmt.Printf("  NPC ID: %s, Error: %v\n", npcID, err)
+			} else {
+				fmt.Printf("%s\n", npc.ShortString())
+			}
+		}
 	}
 
 	fmt.Println("Deleting all settlements...")
@@ -43,11 +54,5 @@ func main() {
 		panic(err)
 	}
 	npcGenerator.NPCListController.DeleteAllNPCs()
-
-	// get npcs per settlement
-	settlements := controller.SettlementService.Settlements
-	for _, settlement := range settlements {
-		fmt.Printf("Settlement: %s, NPCs: %v\n", settlement.Name, settlement.Npcs)
-	}
 
 }

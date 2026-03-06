@@ -44,5 +44,5 @@ func CreateRandomSettlement(settlementCreationSupplier SettlementCreationSupplie
 }
 
 func MakeRandomPopulation() int {
-	return 100 + rand.Intn(900)
+	return rand.Intn(MaxPopulation-MinPopulation+1) + MinPopulation
 }

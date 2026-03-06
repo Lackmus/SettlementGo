@@ -36,6 +36,7 @@ func (s *Settlement) RemoveNpc(target string) {
 func (s Settlement) PrintSettlement() {
 	println("Settlement:", s.Name)
 	println("Faction:", s.Faction)
+	println("Population:", s.Population)
 	println("Coordinates:", s.XCoord, s.YCoord)
 	println("NPCs:")
 	for _, npc := range s.Npcs {

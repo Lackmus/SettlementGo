@@ -1,5 +1,5 @@
-github.com/lackmus/npcgengo v0.0.0-20260303162142-c7aa1c045f7c h1:vbP8vidclFiN8kdiDnee25ik/0vR8ag7l+8NtapqD1Q=
-github.com/lackmus/npcgengo v0.0.0-20260303162142-c7aa1c045f7c/go.mod h1:7lsKpxniFgvVAw1kVvj1oEohlPo/X2DIbtXwK1L380k=
+github.com/lackmus/npcgengo v0.0.0-20260306030815-31fa10b27b64 h1:O/zV9M+bPuPlqSr1Rp76xABSTChh3N536Aqq5oQSIW0=
+github.com/lackmus/npcgengo v0.0.0-20260306030815-31fa10b27b64/go.mod h1:7lsKpxniFgvVAw1kVvj1oEohlPo/X2DIbtXwK1L380k=
 golang.org/x/crypto v0.48.0 h1:/VRzVqiRSggnhY7gNRxPauEQ5Drw9haKdM0jqfcCFts=
 golang.org/x/crypto v0.48.0/go.mod h1:r0kV5h3qnFPlQnBSrULhlsRfryS2pmewsg+XfMgkVos=
 golang.org/x/net v0.50.0 h1:ucWh9eiCGyDR3vtzso0WMQinm2Dnt8cFMuQa9K33J60=

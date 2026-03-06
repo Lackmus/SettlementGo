@@ -9,34 +9,24 @@ import (
 type SettlementListController struct {
 	SettlementService          service.SettlementService
 	SettlementCreationSupplier service.SettlementCreationSupplier
-	SettlementViewer           shared.SettlementViewer
 	observers                  []shared.SettlementObserver
 }
 
 func NewSettlementListController(
 	settlementService service.SettlementService,
-	viewer shared.SettlementViewer,
 	settlementCreationsupplier service.SettlementCreationSupplier,
 ) *SettlementListController {
 	settlementListController := &SettlementListController{
 		SettlementService:          settlementService,
-		SettlementViewer:           viewer,
 		SettlementCreationSupplier: settlementCreationsupplier,
 		observers:                  []shared.SettlementObserver{},
 	}
-
-	settlementListController.RegisterObserver(viewer)
 	return settlementListController
 }
 
-func (c *SettlementListController) CreateSettlement(name string, faction string) {
-	settlement := service.CreateSettlement(name, faction)
-	c.AddSettlement(settlement)
-}
-
-func (c *SettlementListController) CreateRandomSettlement() {
-	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
-	c.AddSettlement(settlement)
+func (c *SettlementListController) InitView(view shared.SettlementObserver) {
+	c.RegisterObserver(view)
+	c.NotifyObservers()
 }
 
 func (c *SettlementListController) RegisterObserver(observer shared.SettlementObserver) {
@@ -57,6 +47,16 @@ func (c *SettlementListController) NotifyObservers() {
 	for _, observer := range c.observers {
 		observer.Update(settlements)
 	}
+}
+
+func (c *SettlementListController) CreateSettlement(name string, faction string) {
+	settlement := service.CreateSettlement(name, faction)
+	c.AddSettlement(settlement)
+}
+
+func (c *SettlementListController) CreateRandomSettlement() {
+	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
+	c.AddSettlement(settlement)
 }
 
 func (c *SettlementListController) AddSettlement(settlement model.Settlement) {

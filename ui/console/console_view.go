@@ -3,16 +3,18 @@ package console
 import (
 	"fmt"
 
+	"github.com/lackmus/settlementgengo/internal/app/controllers"
 	"github.com/lackmus/settlementgengo/pkg/model"
 )
 
 type ConsoleView struct {
+	controller  *controllers.SettlementListController
 	settlements []model.Settlement
 }
 
-func NewConsoleView() *ConsoleView {
+func NewConsoleView(ctrl *controllers.SettlementListController) *ConsoleView {
 	return &ConsoleView{
-		settlements: []model.Settlement{},
+		controller: ctrl,
 	}
 }
 

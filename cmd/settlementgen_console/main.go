@@ -25,17 +25,15 @@ func main() {
 
 	settlementA := service.CreateRandomSettlement(*settlementCreationSupplier)
 	settlementB := service.CreateRandomSettlement(*settlementCreationSupplier)
+	controller.CreateRandomSettlement()
 	settlementA.AddNpc(npc.ID)
 	settlementB.AddNpc(npc.ID)
 
 	fmt.Println("Adding settlements...")
-	if err := controller.CreateRandomSettlement(); err != nil {
+	if _, err := controller.AddSettlement(settlementA); err != nil {
 		panic(err)
 	}
-	if err := controller.AddSettlement(settlementA); err != nil {
-		panic(err)
-	}
-	if err := controller.AddSettlement(settlementB); err != nil {
+	if _, err := controller.AddSettlement(settlementB); err != nil {
 		panic(err)
 	}
 
@@ -45,4 +43,11 @@ func main() {
 		panic(err)
 	}
 	npcGenerator.NPCListController.DeleteAllNPCs()
+
+	// get npcs per settlement
+	settlements := controller.SettlementService.Settlements
+	for _, settlement := range settlements {
+		fmt.Printf("Settlement: %s, NPCs: %v\n", settlement.Name, settlement.Npcs)
+	}
+
 }

@@ -49,22 +49,22 @@ func (c *SettlementListController) NotifyObservers() {
 	}
 }
 
-func (c *SettlementListController) CreateSettlement(name string, faction string) error {
+func (c *SettlementListController) CreateSettlement(name string, faction string) (model.Settlement, error) {
 	settlement := service.CreateSettlement(name, faction)
 	return c.AddSettlement(settlement)
 }
 
-func (c *SettlementListController) CreateRandomSettlement() error {
+func (c *SettlementListController) CreateRandomSettlement() (model.Settlement, error) {
 	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
 	return c.AddSettlement(settlement)
 }
 
-func (c *SettlementListController) AddSettlement(settlement model.Settlement) error {
+func (c *SettlementListController) AddSettlement(settlement model.Settlement) (model.Settlement, error) {
 	if err := c.SettlementService.AddSettlement(settlement); err != nil {
-		return err
+		return model.Settlement{}, err
 	}
 	c.NotifyObservers()
-	return nil
+	return settlement, nil
 }
 
 func (c *SettlementListController) RemoveSettlement(name string) error {
@@ -97,4 +97,26 @@ func (c *SettlementListController) UpdateSettlement(settlement model.Settlement)
 	}
 	c.NotifyObservers()
 	return nil
+}
+
+func (c *SettlementListController) GetSettlementsByFaction(faction string) ([]model.Settlement, error) {
+	settlements, err := c.SettlementService.GetAllSettlements()
+	if err != nil {
+		return nil, err
+	}
+	var filtered []model.Settlement
+	for _, s := range settlements {
+		if s.Faction == faction {
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered, nil
+}
+
+func (c *SettlementListController) GetNpcsInSettlement(name string) ([]string, error) {
+	settlement, err := c.SettlementService.GetSettlement(name)
+	if err != nil {
+		return nil, err
+	}
+	return settlement.Npcs, nil
 }

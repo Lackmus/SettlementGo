@@ -85,12 +85,15 @@ func TestSettlementListController_AddSettlement_ReturnsValidationErrorAndDoesNot
 	invalid := validControllerSettlement("Broken")
 	invalid.XCoord = -1
 
-	err := ctrl.AddSettlement(invalid)
+	settlement, err := ctrl.AddSettlement(invalid)
 	if err == nil {
 		t.Fatal("AddSettlement() expected validation error, got nil")
 	}
 	if obs.updates != 0 {
 		t.Fatalf("observer should not be notified on error; got updates=%d", obs.updates)
+	}
+	if settlement.Name != "" {
+		t.Fatalf("AddSettlement() expected zero value on error, got %+v", settlement)
 	}
 }
 
@@ -101,7 +104,7 @@ func TestSettlementListController_AddSettlement_NotifiesOnSuccess(t *testing.T) 
 	obs := &mockObserver{}
 	ctrl.RegisterObserver(obs)
 
-	err := ctrl.AddSettlement(validControllerSettlement("Greenglade"))
+	npc, err := ctrl.AddSettlement(validControllerSettlement("Greenglade"))
 	if err != nil {
 		t.Fatalf("AddSettlement() unexpected error: %v", err)
 	}
@@ -110,6 +113,9 @@ func TestSettlementListController_AddSettlement_NotifiesOnSuccess(t *testing.T) 
 	}
 	if obs.lastLen != 1 {
 		t.Fatalf("observer expected 1 settlement after add; got %d", obs.lastLen)
+	}
+	if npc.Name != "Greenglade" {
+		t.Fatalf("AddSettlement() expected name 'Greenglade', got '%s'", npc.Name)
 	}
 }
 
@@ -152,7 +158,7 @@ func TestSettlementListController_CreateRandomSettlement_NotifiesObserver(t *tes
 	obs := &mockObserver{}
 	ctrl.RegisterObserver(obs)
 
-	err := ctrl.CreateRandomSettlement()
+	npc, err := ctrl.CreateRandomSettlement()
 	if err != nil {
 		t.Fatalf("CreateRandomSettlement() unexpected error: %v", err)
 	}
@@ -161,5 +167,8 @@ func TestSettlementListController_CreateRandomSettlement_NotifiesObserver(t *tes
 	}
 	if obs.lastLen != 1 {
 		t.Fatalf("observer expected 1 settlement after create random; got %d", obs.lastLen)
+	}
+	if npc.Name == "" {
+		t.Fatal("CreateRandomSettlement() expected non-empty name")
 	}
 }

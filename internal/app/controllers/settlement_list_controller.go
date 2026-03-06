@@ -49,29 +49,38 @@ func (c *SettlementListController) NotifyObservers() {
 	}
 }
 
-func (c *SettlementListController) CreateSettlement(name string, faction string) {
+func (c *SettlementListController) CreateSettlement(name string, faction string) error {
 	settlement := service.CreateSettlement(name, faction)
-	c.AddSettlement(settlement)
+	return c.AddSettlement(settlement)
 }
 
-func (c *SettlementListController) CreateRandomSettlement() {
+func (c *SettlementListController) CreateRandomSettlement() error {
 	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
-	c.AddSettlement(settlement)
+	return c.AddSettlement(settlement)
 }
 
-func (c *SettlementListController) AddSettlement(settlement model.Settlement) {
-	c.SettlementService.AddSettlement(settlement)
+func (c *SettlementListController) AddSettlement(settlement model.Settlement) error {
+	if err := c.SettlementService.AddSettlement(settlement); err != nil {
+		return err
+	}
 	c.NotifyObservers()
+	return nil
 }
 
-func (c *SettlementListController) RemoveSettlement(name string) {
-	c.SettlementService.RemoveSettlement(name)
+func (c *SettlementListController) RemoveSettlement(name string) error {
+	if err := c.SettlementService.RemoveSettlement(name); err != nil {
+		return err
+	}
 	c.NotifyObservers()
+	return nil
 }
 
-func (c *SettlementListController) RemoveAllSettlements() {
-	c.SettlementService.DeleteAllSettlements()
+func (c *SettlementListController) RemoveAllSettlements() error {
+	if err := c.SettlementService.DeleteAllSettlements(); err != nil {
+		return err
+	}
 	c.NotifyObservers()
+	return nil
 }
 
 func (c *SettlementListController) GetSettlement(name string) (model.Settlement, error) {
@@ -82,7 +91,10 @@ func (c *SettlementListController) GetAllSettlements() ([]model.Settlement, erro
 	return c.SettlementService.GetAllSettlements()
 }
 
-func (c *SettlementListController) UpdateSettlement(settlement model.Settlement) {
-	c.SettlementService.UpdateSettlement(settlement)
+func (c *SettlementListController) UpdateSettlement(settlement model.Settlement) error {
+	if err := c.SettlementService.UpdateSettlement(settlement); err != nil {
+		return err
+	}
 	c.NotifyObservers()
+	return nil
 }

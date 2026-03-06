@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+
+	h "github.com/lackmus/settlementgengo/internal/platform/helpers"
 	"github.com/lackmus/settlementgengo/pkg/model"
 	"github.com/lackmus/settlementgengo/pkg/shared"
 )
@@ -22,8 +25,11 @@ func NewSettlementService(storage shared.SettlementStorage) (*SettlementService,
 	}, nil
 }
 
-// add
 func (s *SettlementService) AddSettlement(settlement model.Settlement) error {
+	if err := h.ValidateSettlement(settlement); err != nil {
+		return err
+	}
+
 	for i, existing := range s.Settlements {
 		if existing.Name == settlement.Name {
 			s.Settlements[i] = settlement
@@ -58,11 +64,16 @@ func (s *SettlementService) GetAllSettlements() ([]model.Settlement, error) {
 }
 
 func (s *SettlementService) UpdateSettlement(settlement model.Settlement) error {
+	if err := h.ValidateSettlement(settlement); err != nil {
+		return err
+	}
+
 	for i, settl := range s.Settlements {
 		if settl.Name == settlement.Name {
 			s.Settlements[i] = settlement
 			return s.Storage.SaveSettlement(settlement)
 		}
 	}
-	return nil
+
+	return fmt.Errorf("settlement %q not found", settlement.Name)
 }

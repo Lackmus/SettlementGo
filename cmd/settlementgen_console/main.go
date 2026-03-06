@@ -29,12 +29,20 @@ func main() {
 	settlementB.AddNpc(npc.ID)
 
 	fmt.Println("Adding settlements...")
-	controller.CreateRandomSettlement()
-	controller.AddSettlement(settlementA)
-	controller.AddSettlement(settlementB)
+	if err := controller.CreateRandomSettlement(); err != nil {
+		panic(err)
+	}
+	if err := controller.AddSettlement(settlementA); err != nil {
+		panic(err)
+	}
+	if err := controller.AddSettlement(settlementB); err != nil {
+		panic(err)
+	}
 
 	fmt.Println("Deleting all settlements...")
 
-	controller.RemoveAllSettlements()
+	if err := controller.RemoveAllSettlements(); err != nil {
+		panic(err)
+	}
 	npcGenerator.NPCListController.DeleteAllNPCs()
 }

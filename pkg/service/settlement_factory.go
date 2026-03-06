@@ -11,9 +11,8 @@ const (
 	DefaultNotes   = "Default notes for the settlement."
 	MinPopulation  = 100
 	MaxPopulation  = 1000
-	DefaultXCoord  = int(^uint(0) >> 1) // Max int value
-	DefaultYCoord  = int(^uint(0) >> 1) // Max int value
-
+	DefaultXCoord  = 0
+	DefaultYCoord  = 0
 )
 
 func CreateSettlement(name string, faction string) model.Settlement {

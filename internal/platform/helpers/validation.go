@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
+
+	"github.com/lackmus/settlementgengo/pkg/model"
 )
 
 func ValidateSettlementName(name string) error {
-	if name == "" {
+	if strings.TrimSpace(name) == "" {
 		return errors.New("settlement name cannot be empty")
 	}
 	if len(name) > 50 {
@@ -17,7 +20,7 @@ func ValidateSettlementName(name string) error {
 }
 
 func ValidateFactionName(faction string) error {
-	if faction == "" {
+	if strings.TrimSpace(faction) == "" {
 		return errors.New("faction name cannot be empty")
 	}
 	if len(faction) > 50 {
@@ -58,15 +61,33 @@ func ValidateNotes(notes string) error {
 }
 
 func containsCodeInjection(input string) bool {
-	// Simple check for common code injection patterns
-	if contains := []string{"<script>", "</script>", "javascript:", "onerror=", "onload="}; len(contains) > 0 {
-		for _, pattern := range contains {
-			if contains := input; contains != "" && contains == pattern {
-				return true
-			}
+	normalized := strings.ToLower(input)
+	patterns := []string{"<script>", "</script>", "javascript:", "onerror=", "onload="}
+	for _, pattern := range patterns {
+		if strings.Contains(normalized, pattern) {
+			return true
 		}
 	}
 	return false
+}
+
+func ValidateSettlement(settlement model.Settlement) error {
+	if err := ValidateSettlementName(settlement.Name); err != nil {
+		return fmt.Errorf("invalid settlement name: %w", err)
+	}
+	if err := ValidateFactionName(settlement.Faction); err != nil {
+		return fmt.Errorf("invalid faction: %w", err)
+	}
+	if err := ValidateCoordinates(settlement.XCoord, settlement.YCoord); err != nil {
+		return fmt.Errorf("invalid coordinates: %w", err)
+	}
+	if err := ValidatePopulation(settlement.Population); err != nil {
+		return fmt.Errorf("invalid population: %w", err)
+	}
+	if err := ValidateNotes(settlement.Notes); err != nil {
+		return fmt.Errorf("invalid notes: %w", err)
+	}
+	return nil
 }
 
 func IsNilOrEmpty[T any](t T) bool {

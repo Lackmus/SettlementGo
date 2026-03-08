@@ -56,11 +56,32 @@ func (s *SettlementService) DeleteAllSettlements() error {
 }
 
 func (s *SettlementService) GetSettlement(name string) (model.Settlement, error) {
-	return s.Storage.LoadSettlement(name)
+	for _, settlement := range s.Settlements {
+		if settlement.Name == name {
+			return settlement, nil
+		}
+	}
+	return model.Settlement{}, fmt.Errorf("settlement %q not found", name)
 }
 
 func (s *SettlementService) GetAllSettlements() ([]model.Settlement, error) {
-	return s.Storage.LoadAllSettlements()
+	return append([]model.Settlement(nil), s.Settlements...), nil
+}
+
+func (s *SettlementService) GetSettlementsByFaction(faction string) ([]model.Settlement, error) {
+	settlements, err := s.GetAllSettlements()
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]model.Settlement, 0, len(settlements))
+	for _, settlement := range settlements {
+		if settlement.Faction == faction {
+			filtered = append(filtered, settlement)
+		}
+	}
+
+	return filtered, nil
 }
 
 func (s *SettlementService) UpdateSettlement(settlement model.Settlement) error {

@@ -13,6 +13,15 @@ type Settlement struct {
 	Notes      string   `json:"notes"`
 }
 
+func (s Settlement) HasNpc(id string) bool {
+	for _, npcID := range s.Npcs {
+		if npcID == id {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Settlement) AddNpc(npc string) error {
 	if npc == "" {
 		return fmt.Errorf("npc id cannot be empty")
@@ -27,7 +36,7 @@ func (s *Settlement) AddNpc(npc string) error {
 func (s *Settlement) RemoveNpc(target string) {
 	for i, n := range s.Npcs {
 		if n == target {
-			s.Npcs = append(s.Npcs[:i], s.Npcs[i+1:]...)
+			s.Npcs = append(s.Npcs[:i], s.Npcs[i+1:]...) //
 			break
 		}
 	}

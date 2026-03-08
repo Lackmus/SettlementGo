@@ -11,6 +11,7 @@ type mockSettlementStorage struct {
 	saved       []model.Settlement
 	settlements []model.Settlement
 	failSave    bool
+	failLoadAll bool
 }
 
 func (m *mockSettlementStorage) LoadSettlement(name string) (model.Settlement, error) {
@@ -23,6 +24,9 @@ func (m *mockSettlementStorage) LoadSettlement(name string) (model.Settlement, e
 }
 
 func (m *mockSettlementStorage) LoadAllSettlements() ([]model.Settlement, error) {
+	if m.failLoadAll {
+		return nil, errors.New("load all failed")
+	}
 	return append([]model.Settlement(nil), m.settlements...), nil
 }
 
@@ -123,5 +127,38 @@ func TestSettlementService_UpdateSettlementNotFound(t *testing.T) {
 	err := svc.UpdateSettlement(validSettlement("Missing"))
 	if err == nil {
 		t.Fatal("UpdateSettlement() expected not found error, got nil")
+	}
+}
+
+func TestSettlementService_GetSettlementsByFaction_FiltersResults(t *testing.T) {
+	storage := &mockSettlementStorage{}
+	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{
+		{Name: "A", Faction: "Marquise", XCoord: 1, YCoord: 1, Population: 100, Notes: "n", Npcs: []string{}},
+		{Name: "B", Faction: "Eyrie", XCoord: 2, YCoord: 2, Population: 100, Notes: "n", Npcs: []string{}},
+		{Name: "C", Faction: "Marquise", XCoord: 3, YCoord: 3, Population: 100, Notes: "n", Npcs: []string{}},
+	}}
+
+	results, err := svc.GetSettlementsByFaction("Marquise")
+	if err != nil {
+		t.Fatalf("GetSettlementsByFaction() unexpected error: %v", err)
+	}
+	if len(results) != 2 {
+		t.Fatalf("GetSettlementsByFaction() expected 2 settlements, got %d", len(results))
+	}
+	if results[0].Faction != "Marquise" || results[1].Faction != "Marquise" {
+		t.Fatalf("GetSettlementsByFaction() returned wrong factions: %+v", results)
+	}
+}
+
+func TestSettlementService_GetSettlementsByFaction_EmptyStateReturnsNoResults(t *testing.T) {
+	storage := &mockSettlementStorage{}
+	svc := SettlementService{Storage: storage}
+
+	results, err := svc.GetSettlementsByFaction("Marquise")
+	if err != nil {
+		t.Fatalf("GetSettlementsByFaction() unexpected error: %v", err)
+	}
+	if len(results) != 0 {
+		t.Fatalf("GetSettlementsByFaction() expected 0 settlements, got %d", len(results))
 	}
 }

@@ -2,7 +2,6 @@ package loaders
 
 import (
 	"encoding/json"
-	"io"
 	"os"
 	"path/filepath"
 
@@ -18,17 +17,12 @@ func NewJSONSettlementStorage(dir string) JSONSettlementLoader {
 }
 
 func (l JSONSettlementLoader) LoadSettlement(name string) (model.Settlement, error) {
-	filename := l.Dir + "/" + name + ".json"
-	file, err := os.Open(filename)
+	filename := filepath.Join(l.Dir, name+".json")
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return model.Settlement{}, err
 	}
-	defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return model.Settlement{}, err
-	}
 	var settlement model.Settlement
 	if err := json.Unmarshal(data, &settlement); err != nil {
 		return model.Settlement{}, err
@@ -56,12 +50,12 @@ func (l JSONSettlementLoader) LoadAllSettlements() ([]model.Settlement, error) {
 }
 
 func (l JSONSettlementLoader) SaveSettlement(nsettlement model.Settlement) error {
-	filename := l.Dir + "/" + nsettlement.Name + ".json"
+	filename := filepath.Join(l.Dir, nsettlement.Name+".json")
 	data, err := json.MarshalIndent(nsettlement, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filename, data, 0644)
+	return os.WriteFile(filename, data, 0o644)
 }
 
 func (l JSONSettlementLoader) SaveAllSettlements(settlements []model.Settlement) error {
@@ -74,7 +68,7 @@ func (l JSONSettlementLoader) SaveAllSettlements(settlements []model.Settlement)
 }
 
 func (l JSONSettlementLoader) DeleteSettlement(name string) error {
-	filename := l.Dir + "/" + name + ".json"
+	filename := filepath.Join(l.Dir, name+".json")
 	return os.Remove(filename)
 }
 
@@ -87,7 +81,7 @@ func (l JSONSettlementLoader) DeleteAllSettlements() error {
 		if file.IsDir() || filepath.Ext(file.Name()) != ".json" {
 			continue
 		}
-		if err := os.Remove(l.Dir + "/" + file.Name()); err != nil {
+		if err := os.Remove(filepath.Join(l.Dir, file.Name())); err != nil {
 			return err
 		}
 	}

@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,25 +33,13 @@ func copyDir(t *testing.T, src, dst string) {
 			continue
 		}
 
-		srcFile, err := os.Open(srcPath)
+		data, err := os.ReadFile(srcPath)
 		if err != nil {
-			t.Fatalf("failed to open %s: %v", srcPath, err)
+			t.Fatalf("failed to read %s: %v", srcPath, err)
 		}
-
-		dstFile, err := os.Create(dstPath)
-		if err != nil {
-			srcFile.Close()
-			t.Fatalf("failed to create %s: %v", dstPath, err)
+		if err := os.WriteFile(dstPath, data, 0o644); err != nil {
+			t.Fatalf("failed to write %s: %v", dstPath, err)
 		}
-
-		if _, err := io.Copy(dstFile, srcFile); err != nil {
-			srcFile.Close()
-			dstFile.Close()
-			t.Fatalf("failed to copy %s to %s: %v", srcPath, dstPath, err)
-		}
-
-		srcFile.Close()
-		dstFile.Close()
 	}
 }
 
@@ -286,19 +273,19 @@ func TestSettlementListController_AddRandomNPCsToSettlement_PropagatesGeneratorE
 
 	call := 0
 	deleted := make([]string, 0)
-	ctrl.settlementNPCProvider = &SettlementNPCProvider{
-		createRandomNPCFn: func() (string, error) {
+	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createRandomNPCIDFn: func() (string, error) {
 			call++
 			if call == 2 {
 				return "", errors.New("generator failed")
 			}
 			return fmt.Sprintf("npc-%d", call), nil
 		},
-		deleteNPCFn: func(id string) error {
+		deleteNPCByIDFn: func(id string) error {
 			deleted = append(deleted, id)
 			return nil
 		},
-	}
+	})
 
 	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 3)
 	if err == nil {
@@ -321,11 +308,11 @@ func TestSettlementListController_AddRandomNPCsToSettlement_FailsOnEmptyGenerate
 	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
 	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
 
-	ctrl.settlementNPCProvider = &SettlementNPCProvider{
-		createRandomNPCFn: func() (string, error) {
+	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createRandomNPCIDFn: func() (string, error) {
 			return "", nil
 		},
-	}
+	})
 
 	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 1)
 	if err == nil {
@@ -348,17 +335,17 @@ func TestSettlementListController_AddRandomNPCsToSettlement_RollsBackOnUpdateFai
 	generated := []string{"npc-a", "npc-b"}
 	idx := 0
 	deleted := make([]string, 0)
-	ctrl.settlementNPCProvider = &SettlementNPCProvider{
-		createRandomNPCFn: func() (string, error) {
+	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createRandomNPCIDFn: func() (string, error) {
 			id := generated[idx]
 			idx++
 			return id, nil
 		},
-		deleteNPCFn: func(id string) error {
+		deleteNPCByIDFn: func(id string) error {
 			deleted = append(deleted, id)
 			return nil
 		},
-	}
+	})
 
 	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 2)
 	if err == nil {
@@ -369,5 +356,64 @@ func TestSettlementListController_AddRandomNPCsToSettlement_RollsBackOnUpdateFai
 	}
 	if len(deleted) != 2 || deleted[0] != "npc-a" || deleted[1] != "npc-b" {
 		t.Fatalf("expected rollback deletion of generated ids, got %v", deleted)
+	}
+}
+
+func TestSettlementListController_AddNPCToSettlement_PersistsAndNotifiesOnSuccess(t *testing.T) {
+	existing := validControllerSettlement("Gladeford")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	obs := &mockObserver{}
+	ctrl.RegisterObserver(obs)
+	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createNPCIDFn: func(npctype string, faction string) (string, error) {
+			return "npc-1", nil
+		},
+		deleteNPCByIDFn: func(id string) error { return nil },
+	})
+
+	settlement, err := ctrl.AddNPCToSettlement(existing.Name, "civilian", existing.Faction)
+	if err != nil {
+		t.Fatalf("AddNPCToSettlement() unexpected error: %v", err)
+	}
+	if len(settlement.Npcs) != 1 || settlement.Npcs[0] != "npc-1" {
+		t.Fatalf("expected persisted settlement with npc-1, got %v", settlement.Npcs)
+	}
+	if len(storage.saved) != 1 {
+		t.Fatalf("expected one save call, got %d", len(storage.saved))
+	}
+	if obs.updates != 1 {
+		t.Fatalf("observer should be notified once on success; got updates=%d", obs.updates)
+	}
+}
+
+func TestSettlementListController_AddNPCToSettlement_RollsBackOnUpdateFailure(t *testing.T) {
+	existing := validControllerSettlement("Brookpost")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}, failSave: true}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	deleted := make([]string, 0)
+	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createNPCIDFn: func(npctype string, faction string) (string, error) {
+			return "npc-rollback", nil
+		},
+		deleteNPCByIDFn: func(id string) error {
+			deleted = append(deleted, id)
+			return nil
+		},
+	})
+
+	_, err := ctrl.AddNPCToSettlement(existing.Name, "military", existing.Faction)
+	if err == nil {
+		t.Fatal("AddNPCToSettlement() expected update error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to update settlement after npc generation") {
+		t.Fatalf("expected wrapped update error, got: %v", err)
+	}
+	if len(deleted) != 1 || deleted[0] != "npc-rollback" {
+		t.Fatalf("expected rollback deletion of generated id, got %v", deleted)
 	}
 }

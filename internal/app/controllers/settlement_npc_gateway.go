@@ -17,7 +17,7 @@ type settlementNPCGateway struct {
 	npcGenerator npcgengo.NPCGen
 }
 
-func NewSettlementNPCGateway(npcGenerator npcgengo.NPCGen) SettlementNPCGateway {
+func newSettlementNPCGateway(npcGenerator npcgengo.NPCGen) SettlementNPCGateway {
 	return &settlementNPCGateway{npcGenerator: npcGenerator}
 }
 

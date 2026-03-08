@@ -36,7 +36,7 @@ func (m *mockNPCGateway) DeleteNPC(id string) error {
 }
 
 func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_ValidatesInit(t *testing.T) {
-	provider := NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	provider := newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createRandomNPCIDFn: func() (string, error) {
 			return "npc-1", nil
 		},
@@ -57,7 +57,7 @@ func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_RollsBackOnFailur
 	call := 0
 	deleted := []string{}
 
-	provider := NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	provider := newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createRandomNPCIDFn: func() (string, error) {
 			call++
 			if call == 1 {
@@ -88,7 +88,7 @@ func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_RollsBackOnFailur
 
 func TestSettlementNPCProvider_DeleteNPCFromSettlement_RemovesFromSettlement(t *testing.T) {
 	settlement := model.Settlement{Name: "Thicket", NPCs: []string{"npc-a", "npc-b"}}
-	provider := NewSettlementNPCProviderWithGateway(&mockNPCGateway{})
+	provider := newSettlementNPCProviderWithGateway(&mockNPCGateway{})
 
 	err := provider.DeleteNPCFromSettlement(&settlement, "npc-a")
 	if err != nil {

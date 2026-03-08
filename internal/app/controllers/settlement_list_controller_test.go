@@ -273,7 +273,7 @@ func TestSettlementListController_AddRandomNPCsToSettlement_PropagatesGeneratorE
 
 	call := 0
 	deleted := make([]string, 0)
-	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createRandomNPCIDFn: func() (string, error) {
 			call++
 			if call == 2 {
@@ -308,7 +308,7 @@ func TestSettlementListController_AddRandomNPCsToSettlement_FailsOnEmptyGenerate
 	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
 	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
 
-	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createRandomNPCIDFn: func() (string, error) {
 			return "", nil
 		},
@@ -335,7 +335,7 @@ func TestSettlementListController_AddRandomNPCsToSettlement_RollsBackOnUpdateFai
 	generated := []string{"npc-a", "npc-b"}
 	idx := 0
 	deleted := make([]string, 0)
-	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createRandomNPCIDFn: func() (string, error) {
 			id := generated[idx]
 			idx++
@@ -367,7 +367,7 @@ func TestSettlementListController_AddNPCToSettlement_PersistsAndNotifiesOnSucces
 
 	obs := &mockObserver{}
 	ctrl.RegisterObserver(obs)
-	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createNPCIDFn: func(npctype string, faction string) (string, error) {
 			return "npc-1", nil
 		},
@@ -396,7 +396,7 @@ func TestSettlementListController_AddNPCToSettlement_RollsBackOnUpdateFailure(t 
 	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
 
 	deleted := make([]string, 0)
-	ctrl.settlementNPCProvider = NewSettlementNPCProviderWithGateway(&mockNPCGateway{
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
 		createNPCIDFn: func(npctype string, faction string) (string, error) {
 			return "npc-rollback", nil
 		},

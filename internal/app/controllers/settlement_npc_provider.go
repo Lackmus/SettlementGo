@@ -12,10 +12,10 @@ type SettlementNPCProvider struct {
 }
 
 func NewSettlementNPCProvider(npcGenerator npcgengo.NPCGen) *SettlementNPCProvider {
-	return NewSettlementNPCProviderWithGateway(NewSettlementNPCGateway(npcGenerator))
+	return newSettlementNPCProviderWithGateway(newSettlementNPCGateway(npcGenerator))
 }
 
-func NewSettlementNPCProviderWithGateway(gateway SettlementNPCGateway) *SettlementNPCProvider {
+func newSettlementNPCProviderWithGateway(gateway SettlementNPCGateway) *SettlementNPCProvider {
 	return &SettlementNPCProvider{gateway: gateway}
 }
 

@@ -12,7 +12,7 @@ import (
 type SettlementListController struct {
 	SettlementService          service.SettlementService
 	SettlementCreationSupplier service.SettlementCreationSupplier
-	npcGenerator               npcgengo.NPCGen
+	settlementNPCProvider      *SettlementNPCProvider
 	observers                  []shared.SettlementObserver
 }
 
@@ -24,7 +24,7 @@ func NewSettlementListController(
 	settlementListController := &SettlementListController{
 		SettlementService:          settlementService,
 		SettlementCreationSupplier: settlementCreationsupplier,
-		npcGenerator:               npcGenerator,
+		settlementNPCProvider:      NewSettlementNPCProvider(npcGenerator),
 		observers:                  []shared.SettlementObserver{},
 	}
 	return settlementListController
@@ -86,21 +86,16 @@ func (c *SettlementListController) AddRandomNPCsToSettlement(name string, npcCou
 	if npcCount < 0 {
 		return model.Settlement{}, fmt.Errorf("npcCount cannot be negative")
 	}
-	if c.npcGenerator.NPCListController == nil {
+	if c.settlementNPCProvider == nil || c.settlementNPCProvider.npcGenerator.NPCListController == nil {
 		return model.Settlement{}, fmt.Errorf("npc generator is not configured")
 	}
-
 	settlement, err := c.GetSettlement(name)
 	if err != nil {
 		return model.Settlement{}, err
 	}
 
 	for i := 0; i < npcCount; i++ {
-		npc, genErr := c.npcGenerator.NPCListController.CreateRandomNPC()
-		if genErr != nil {
-			return model.Settlement{}, genErr
-		}
-		settlement.AddNpc(npc.ID)
+		settlement = *c.settlementNPCProvider.GenerateRandomNPCInSettlement(&settlement)
 	}
 
 	if err := c.UpdateSettlement(settlement); err != nil {

@@ -18,12 +18,12 @@ type SettlementListController struct {
 
 func NewSettlementListController(
 	settlementService service.SettlementService,
-	settlementCreationsupplier service.SettlementCreationSupplier,
+	settlementCreationSupplier service.SettlementCreationSupplier,
 	npcGenerator npcgengo.NPCGen,
 ) *SettlementListController {
 	settlementListController := &SettlementListController{
 		SettlementService:          settlementService,
-		SettlementCreationSupplier: settlementCreationsupplier,
+		SettlementCreationSupplier: settlementCreationSupplier,
 		settlementNPCProvider:      NewSettlementNPCProvider(npcGenerator),
 		observers:                  []shared.SettlementObserver{},
 	}

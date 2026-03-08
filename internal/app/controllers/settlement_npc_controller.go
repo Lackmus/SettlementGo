@@ -16,7 +16,7 @@ func (c *SettlementListController) AddNPCToSettlement(settlementName string, npc
 	if err != nil {
 		return model.Settlement{}, err
 	}
-	originalNPCCount := len(settlement.Npcs)
+	originalNPCCount := len(settlement.NPCs)
 	settlement, err = c.settlementNPCProvider.GenerateSingleNPCForSettlement(&settlement, npctype, faction)
 	if err != nil {
 		return model.Settlement{}, fmt.Errorf("failed to generate npc for settlement %q: %w", settlementName, err)
@@ -39,7 +39,7 @@ func (c *SettlementListController) AddRandomNPCToSettlement(settlementName strin
 	if err != nil {
 		return model.Settlement{}, err
 	}
-	originalNPCCount := len(settlement.Npcs)
+	originalNPCCount := len(settlement.NPCs)
 	settlement, err = c.settlementNPCProvider.GenerateSingleRandomNPCForSettlement(&settlement)
 	if err != nil {
 		return model.Settlement{}, fmt.Errorf("failed to generate random npc for settlement %q: %w", settlementName, err)
@@ -69,7 +69,7 @@ func (c *SettlementListController) AddRandomNPCsToSettlement(name string, npcCou
 		return settlement, nil
 	}
 
-	originalNPCCount := len(settlement.Npcs)
+	originalNPCCount := len(settlement.NPCs)
 
 	settlement, err = c.settlementNPCProvider.GenerateRandomNPCsForSettlement(&settlement, npcCount)
 	if err != nil {
@@ -88,24 +88,24 @@ func (c *SettlementListController) AddRandomNPCsToSettlement(name string, npcCou
 	return settlement, nil
 }
 
-func (c *SettlementListController) GetNpcsInSettlement(name string) ([]string, error) {
+func (c *SettlementListController) GetNPCsInSettlement(name string) ([]string, error) {
 	settlement, err := c.SettlementService.GetSettlement(name)
 	if err != nil {
 		return nil, err
 	}
-	return settlement.Npcs, nil
+	return settlement.NPCs, nil
 }
 
 func (c *SettlementListController) generatedNPCIDs(settlement model.Settlement, originalNPCCount int, expectedGeneratedCount int) ([]string, error) {
-	generatedCount := len(settlement.Npcs) - originalNPCCount
+	generatedCount := len(settlement.NPCs) - originalNPCCount
 	if generatedCount != expectedGeneratedCount {
 		return nil, fmt.Errorf("expected %d generated NPCs, got %d", expectedGeneratedCount, generatedCount)
 	}
-	return append([]string(nil), settlement.Npcs[originalNPCCount:]...), nil
+	return append([]string(nil), settlement.NPCs[originalNPCCount:]...), nil
 }
 
 func (c *SettlementListController) rollbackGeneratedNPCs(generatedNPCIDs []string, settlement *model.Settlement, cause error) error {
-	if cleanupErr := c.settlementNPCProvider.CompleteDeleteAllNPCs(generatedNPCIDs); cleanupErr != nil {
+	if cleanupErr := c.settlementNPCProvider.DeleteNPCBatch(generatedNPCIDs); cleanupErr != nil {
 		return fmt.Errorf("%w (rollback failed: %v)", cause, cleanupErr)
 	}
 	return cause

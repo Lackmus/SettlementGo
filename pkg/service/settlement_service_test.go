@@ -60,7 +60,7 @@ func validSettlement(name string) model.Settlement {
 		YCoord:     20,
 		Population: 150,
 		Notes:      "Valid notes",
-		Npcs:       []string{},
+		NPCs:       []string{},
 	}
 }
 
@@ -133,9 +133,9 @@ func TestSettlementService_UpdateSettlementNotFound(t *testing.T) {
 func TestSettlementService_GetSettlementsByFaction_FiltersResults(t *testing.T) {
 	storage := &mockSettlementStorage{}
 	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{
-		{Name: "A", Faction: "Marquise", XCoord: 1, YCoord: 1, Population: 100, Notes: "n", Npcs: []string{}},
-		{Name: "B", Faction: "Eyrie", XCoord: 2, YCoord: 2, Population: 100, Notes: "n", Npcs: []string{}},
-		{Name: "C", Faction: "Marquise", XCoord: 3, YCoord: 3, Population: 100, Notes: "n", Npcs: []string{}},
+		{Name: "A", Faction: "Marquise", XCoord: 1, YCoord: 1, Population: 100, Notes: "n", NPCs: []string{}},
+		{Name: "B", Faction: "Eyrie", XCoord: 2, YCoord: 2, Population: 100, Notes: "n", NPCs: []string{}},
+		{Name: "C", Faction: "Marquise", XCoord: 3, YCoord: 3, Population: 100, Notes: "n", NPCs: []string{}},
 	}}
 
 	results, err := svc.GetSettlementsByFaction("Marquise")

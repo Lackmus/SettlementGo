@@ -53,7 +53,7 @@ func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_ValidatesInit(t *
 }
 
 func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_RollsBackOnFailure(t *testing.T) {
-	settlement := model.Settlement{Name: "Oakwall", Npcs: []string{}}
+	settlement := model.Settlement{Name: "Oakwall", NPCs: []string{}}
 	call := 0
 	deleted := []string{}
 
@@ -81,20 +81,20 @@ func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_RollsBackOnFailur
 	if len(deleted) != 1 || deleted[0] != "npc-1" {
 		t.Fatalf("expected rollback delete for npc-1, got %v", deleted)
 	}
-	if len(settlement.Npcs) != 0 {
-		t.Fatalf("expected settlement npc list rolled back to empty, got %v", settlement.Npcs)
+	if len(settlement.NPCs) != 0 {
+		t.Fatalf("expected settlement npc list rolled back to empty, got %v", settlement.NPCs)
 	}
 }
 
 func TestSettlementNPCProvider_DeleteNPCFromSettlement_RemovesFromSettlement(t *testing.T) {
-	settlement := model.Settlement{Name: "Thicket", Npcs: []string{"npc-a", "npc-b"}}
+	settlement := model.Settlement{Name: "Thicket", NPCs: []string{"npc-a", "npc-b"}}
 	provider := NewSettlementNPCProviderWithGateway(&mockNPCGateway{})
 
 	err := provider.DeleteNPCFromSettlement(&settlement, "npc-a")
 	if err != nil {
 		t.Fatalf("DeleteNPCFromSettlement() unexpected error: %v", err)
 	}
-	if len(settlement.Npcs) != 1 || settlement.Npcs[0] != "npc-b" {
-		t.Fatalf("expected npc-a removed from settlement list, got %v", settlement.Npcs)
+	if len(settlement.NPCs) != 1 || settlement.NPCs[0] != "npc-b" {
+		t.Fatalf("expected npc-a removed from settlement list, got %v", settlement.NPCs)
 	}
 }

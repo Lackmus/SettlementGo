@@ -49,9 +49,9 @@ func (l JSONSettlementLoader) LoadAllSettlements() ([]model.Settlement, error) {
 	return settlements, nil
 }
 
-func (l JSONSettlementLoader) SaveSettlement(nsettlement model.Settlement) error {
-	filename := filepath.Join(l.Dir, nsettlement.Name+".json")
-	data, err := json.MarshalIndent(nsettlement, "", "  ")
+func (l JSONSettlementLoader) SaveSettlement(settlement model.Settlement) error {
+	filename := filepath.Join(l.Dir, settlement.Name+".json")
+	data, err := json.MarshalIndent(settlement, "", "  ")
 	if err != nil {
 		return err
 	}

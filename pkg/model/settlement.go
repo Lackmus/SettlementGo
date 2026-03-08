@@ -4,7 +4,7 @@ import "fmt"
 
 // settlement struct
 type Settlement struct {
-	Npcs       []string `json:"npcs"`
+	NPCs       []string `json:"npcs"`
 	Name       string   `json:"name"`
 	Faction    string   `json:"faction"`
 	XCoord     int      `json:"xCoord"`
@@ -13,8 +13,8 @@ type Settlement struct {
 	Notes      string   `json:"notes"`
 }
 
-func (s Settlement) HasNpc(id string) bool {
-	for _, npcID := range s.Npcs {
+func (s Settlement) HasNPC(id string) bool {
+	for _, npcID := range s.NPCs {
 		if npcID == id {
 			return true
 		}
@@ -22,21 +22,21 @@ func (s Settlement) HasNpc(id string) bool {
 	return false
 }
 
-func (s *Settlement) AddNpc(npc string) error {
+func (s *Settlement) AddNPC(npc string) error {
 	if npc == "" {
 		return fmt.Errorf("npc id cannot be empty")
 	}
-	if s.Npcs == nil {
-		s.Npcs = []string{}
+	if s.NPCs == nil {
+		s.NPCs = []string{}
 	}
-	s.Npcs = append(s.Npcs, npc)
+	s.NPCs = append(s.NPCs, npc)
 	return nil
 }
 
-func (s *Settlement) RemoveNpc(target string) {
-	for i, n := range s.Npcs {
+func (s *Settlement) RemoveNPC(target string) {
+	for i, n := range s.NPCs {
 		if n == target {
-			s.Npcs = append(s.Npcs[:i], s.Npcs[i+1:]...) //
+			s.NPCs = append(s.NPCs[:i], s.NPCs[i+1:]...) //
 			break
 		}
 	}
@@ -48,7 +48,7 @@ func (s Settlement) PrintSettlement() {
 	println("Population:", s.Population)
 	println("Coordinates:", s.XCoord, s.YCoord)
 	println("NPCs:")
-	for _, npc := range s.Npcs {
+	for _, npc := range s.NPCs {
 		println(" -", npc)
 	}
 	println("Notes:", s.Notes)

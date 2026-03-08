@@ -30,7 +30,7 @@ func (s *SettlementNPCProvider) addNPCIDToSettlement(settlement *model.Settlemen
 	if npcID == "" {
 		return nil
 	}
-	return settlement.AddNpc(npcID)
+	return settlement.AddNPC(npcID)
 }
 
 func (s *SettlementNPCProvider) DeleteNPCFromSettlement(settlement *model.Settlement, npcID string) error {
@@ -40,7 +40,7 @@ func (s *SettlementNPCProvider) DeleteNPCFromSettlement(settlement *model.Settle
 	if npcID == "" {
 		return nil
 	}
-	settlement.RemoveNpc(npcID)
+	settlement.RemoveNPC(npcID)
 	return nil
 }
 
@@ -48,7 +48,7 @@ func (s *SettlementNPCProvider) DeleteAllNPCsFromSettlement(settlement *model.Se
 	if err := s.validateProviderInput(settlement); err != nil {
 		return err
 	}
-	for _, npcID := range append([]string(nil), settlement.Npcs...) {
+	for _, npcID := range append([]string(nil), settlement.NPCs...) {
 		if err := s.DeleteNPCFromSettlement(settlement, npcID); err != nil {
 			return fmt.Errorf("failed to delete npc %q from settlement: %w", npcID, err)
 		}
@@ -66,11 +66,11 @@ func (s *SettlementNPCProvider) DeleteNPC(npcID string, settlement *model.Settle
 	if npcID == "" {
 		return &model.Settlement{}, fmt.Errorf("npc id is empty")
 	}
-	settlement.RemoveNpc(npcID)
+	settlement.RemoveNPC(npcID)
 	return settlement, s.gateway.DeleteNPC(npcID)
 }
 
-func (s *SettlementNPCProvider) CompleteDeleteAllNPCs(ids []string) error {
+func (s *SettlementNPCProvider) DeleteNPCBatch(ids []string) error {
 	if s == nil {
 		return fmt.Errorf("settlement npc provider is not initialized")
 	}
@@ -180,12 +180,12 @@ func (s *SettlementNPCProvider) appendGeneratedNPCIDOrRollback(settlement *model
 }
 
 func (s *SettlementNPCProvider) rollbackGeneratedNPCBatch(settlement *model.Settlement, generatedNPCIDs []string, cause error) error {
-	if cleanupErr := s.CompleteDeleteAllNPCs(generatedNPCIDs); cleanupErr != nil {
+	if cleanupErr := s.DeleteNPCBatch(generatedNPCIDs); cleanupErr != nil {
 		return fmt.Errorf("%w (rollback failed: %v)", cause, cleanupErr)
 	}
 	if settlement != nil {
 		for _, id := range generatedNPCIDs {
-			settlement.RemoveNpc(id)
+			settlement.RemoveNPC(id)
 		}
 	}
 	return cause

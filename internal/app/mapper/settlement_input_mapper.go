@@ -23,7 +23,7 @@ func ToSettlementInput(settlementInput model.Settlement) SettlementInputMapper {
 		Faction:    settlementInput.Faction,
 		XCoord:     settlementInput.XCoord,
 		YCoord:     settlementInput.YCoord,
-		NPCIDs:     settlementInput.Npcs,
+		NPCIDs:     settlementInput.NPCs,
 	}
 }
 
@@ -43,7 +43,7 @@ func ToSettlementModel(input SettlementInputMapper) model.Settlement {
 		Faction:    input.Faction,
 		XCoord:     input.XCoord,
 		YCoord:     input.YCoord,
-		Npcs:       input.NPCIDs,
+		NPCs:       input.NPCIDs,
 	}
 }
 

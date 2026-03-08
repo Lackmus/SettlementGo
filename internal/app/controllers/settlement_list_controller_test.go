@@ -132,7 +132,7 @@ func validControllerSettlement(name string) model.Settlement {
 		YCoord:     20,
 		Population: 150,
 		Notes:      "Valid notes",
-		Npcs:       []string{},
+		NPCs:       []string{},
 	}
 }
 
@@ -245,11 +245,11 @@ func TestSettlementListController_CreateRandomSettlementWithNPCs_AppendsGenerate
 	if err != nil {
 		t.Fatalf("CreateRandomSettlementWithNPCs() unexpected error: %v", err)
 	}
-	if len(settlement.Npcs) != 2 {
-		t.Fatalf("expected 2 NPC IDs, got %d", len(settlement.Npcs))
+	if len(settlement.NPCs) != 2 {
+		t.Fatalf("expected 2 NPC IDs, got %d", len(settlement.NPCs))
 	}
-	if settlement.Npcs[0] == "" || settlement.Npcs[1] == "" {
-		t.Fatalf("expected non-empty NPC IDs, got %v", settlement.Npcs)
+	if settlement.NPCs[0] == "" || settlement.NPCs[1] == "" {
+		t.Fatalf("expected non-empty NPC IDs, got %v", settlement.NPCs)
 	}
 }
 
@@ -378,8 +378,8 @@ func TestSettlementListController_AddNPCToSettlement_PersistsAndNotifiesOnSucces
 	if err != nil {
 		t.Fatalf("AddNPCToSettlement() unexpected error: %v", err)
 	}
-	if len(settlement.Npcs) != 1 || settlement.Npcs[0] != "npc-1" {
-		t.Fatalf("expected persisted settlement with npc-1, got %v", settlement.Npcs)
+	if len(settlement.NPCs) != 1 || settlement.NPCs[0] != "npc-1" {
+		t.Fatalf("expected persisted settlement with npc-1, got %v", settlement.NPCs)
 	}
 	if len(storage.saved) != 1 {
 		t.Fatalf("expected one save call, got %d", len(storage.saved))

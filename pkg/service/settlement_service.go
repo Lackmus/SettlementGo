@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	h "github.com/lackmus/settlementgengo/internal/platform/helpers"
+	validation "github.com/lackmus/settlementgengo/internal/platform/helpers"
 	"github.com/lackmus/settlementgengo/pkg/model"
 	"github.com/lackmus/settlementgengo/pkg/shared"
 )
@@ -26,7 +26,7 @@ func NewSettlementService(storage shared.SettlementStorage) (*SettlementService,
 }
 
 func (s *SettlementService) AddSettlement(settlement model.Settlement) error {
-	if err := h.ValidateSettlement(settlement); err != nil {
+	if err := validation.ValidateSettlement(settlement); err != nil {
 		return err
 	}
 
@@ -85,12 +85,12 @@ func (s *SettlementService) GetSettlementsByFaction(faction string) ([]model.Set
 }
 
 func (s *SettlementService) UpdateSettlement(settlement model.Settlement) error {
-	if err := h.ValidateSettlement(settlement); err != nil {
+	if err := validation.ValidateSettlement(settlement); err != nil {
 		return err
 	}
 
-	for i, settl := range s.Settlements {
-		if settl.Name == settlement.Name {
+	for i, currentSettlement := range s.Settlements {
+		if currentSettlement.Name == settlement.Name {
 			s.Settlements[i] = settlement
 			return s.Storage.SaveSettlement(settlement)
 		}

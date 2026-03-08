@@ -26,19 +26,19 @@ func main() {
 	}
 
 	fmt.Println("Created settlements with generated NPCs...")
-	fmt.Printf("Created: %s, NPCs: %v\n", settlementA.Name, settlementA.Npcs)
-	fmt.Printf("Created: %s, NPCs: %v\n", settlementB.Name, settlementB.Npcs)
+	fmt.Printf("Created: %s, NPCs: %v\n", settlementA.Name, settlementA.NPCs)
+	fmt.Printf("Created: %s, NPCs: %v\n", settlementB.Name, settlementB.NPCs)
 
 	fmt.Println("Current settlements and their NPCs...")
 	settlements := controller.SettlementService.Settlements
 	for _, settlement := range settlements {
-		fmt.Printf("Settlement: %s, NPCs: %v\n", settlement.Name, settlement.Npcs)
+		fmt.Printf("Settlement: %s, NPCs: %v\n", settlement.Name, settlement.NPCs)
 	}
 
 	fmt.Println("Loading settlements and their NPCs...")
 	for _, settlement := range settlements {
 		fmt.Printf("Settlement: %s\n", settlement.Name)
-		for _, npcID := range settlement.Npcs {
+		for _, npcID := range settlement.NPCs {
 			npc, err := npcGenerator.NPCListController.GetNPCByID(npcID)
 			if err != nil {
 				fmt.Printf("  NPC ID: %s, Error: %v\n", npcID, err)

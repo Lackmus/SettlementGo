@@ -19,7 +19,7 @@ func CreateSettlement(name string, faction string) model.Settlement {
 	return model.Settlement{
 		Name:       name,
 		Population: MakeRandomPopulation(),
-		Npcs:       []string{},
+		NPCs:       []string{},
 		Faction:    faction,
 		XCoord:     DefaultXCoord,
 		YCoord:     DefaultYCoord,
@@ -34,7 +34,7 @@ func CreateRandomSettlement(settlementCreationSupplier SettlementCreationSupplie
 	return model.Settlement{
 		Name:       randomName,
 		Population: MakeRandomPopulation(),
-		Npcs:       []string{},
+		NPCs:       []string{},
 		Faction:    randomFaction,
 		XCoord:     DefaultXCoord,
 		YCoord:     DefaultYCoord,

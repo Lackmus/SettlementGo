@@ -26,7 +26,7 @@ func (c *SettlementListController) AddNPCToSettlement(settlementName string, npc
 		return model.Settlement{}, err
 	}
 	if err := c.UpdateSettlement(settlement); err != nil {
-		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, &settlement, fmt.Errorf("failed to update settlement after npc generation: %w", err))
+		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, fmt.Errorf("failed to update settlement after npc generation: %w", err))
 	}
 	return settlement, nil
 }
@@ -49,7 +49,7 @@ func (c *SettlementListController) AddRandomNPCToSettlement(settlementName strin
 		return model.Settlement{}, err
 	}
 	if err := c.UpdateSettlement(settlement); err != nil {
-		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, &settlement, fmt.Errorf("failed to update settlement after random npc generation: %w", err))
+		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, fmt.Errorf("failed to update settlement after random npc generation: %w", err))
 	}
 	return settlement, nil
 }
@@ -82,7 +82,7 @@ func (c *SettlementListController) AddRandomNPCsToSettlement(name string, npcCou
 	}
 
 	if err := c.UpdateSettlement(settlement); err != nil {
-		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, &settlement, fmt.Errorf("failed to update settlement after npc generation: %w", err))
+		return model.Settlement{}, c.rollbackGeneratedNPCs(generatedNPCIDs, fmt.Errorf("failed to update settlement after npc generation: %w", err))
 	}
 
 	return settlement, nil
@@ -104,7 +104,7 @@ func (c *SettlementListController) generatedNPCIDs(settlement model.Settlement, 
 	return append([]string(nil), settlement.NPCs[originalNPCCount:]...), nil
 }
 
-func (c *SettlementListController) rollbackGeneratedNPCs(generatedNPCIDs []string, settlement *model.Settlement, cause error) error {
+func (c *SettlementListController) rollbackGeneratedNPCs(generatedNPCIDs []string, cause error) error {
 	if cleanupErr := c.settlementNPCProvider.DeleteNPCBatch(generatedNPCIDs); cleanupErr != nil {
 		return fmt.Errorf("%w (rollback failed: %v)", cause, cleanupErr)
 	}

@@ -65,12 +65,24 @@ func (c *SettlementListController) NotifyObservers() {
 
 func (c *SettlementListController) CreateSettlement(name string, faction string) (model.Settlement, error) {
 	settlement := service.CreateSettlement(name, faction)
+	if c.SettlementExists(settlement.Name) {
+		return model.Settlement{}, fmt.Errorf("settlement with name %q already exists", settlement.Name)
+	}
 	return c.AddSettlement(settlement)
 }
 
 func (c *SettlementListController) CreateRandomSettlement() (model.Settlement, error) {
 	settlement := service.CreateRandomSettlement(c.SettlementCreationSupplier)
+	for c.SettlementExists(settlement.Name) {
+		settlement = service.CreateRandomSettlement(c.SettlementCreationSupplier)
+	}
 	return c.AddSettlement(settlement)
+}
+
+// check if settlement already exists
+func (c *SettlementListController) SettlementExists(name string) bool {
+	_, err := c.GetSettlement(name)
+	return err == nil
 }
 
 func (c *SettlementListController) CreateRandomSettlementWithNPCs(npcCount int) (model.Settlement, error) {

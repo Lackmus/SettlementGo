@@ -13,15 +13,15 @@ type Settlement struct {
 	Notes      string   `json:"notes"`
 }
 
-func (s *Settlement) AddNpc(npc string) {
+func (s *Settlement) AddNpc(npc string) error {
 	if npc == "" {
-		fmt.Println("Cannot add empty NPC to settlement.")
-		return
+		return fmt.Errorf("npc id cannot be empty")
 	}
 	if s.Npcs == nil {
 		s.Npcs = []string{}
 	}
 	s.Npcs = append(s.Npcs, npc)
+	return nil
 }
 
 func (s *Settlement) RemoveNpc(target string) {

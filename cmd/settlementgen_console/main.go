@@ -55,4 +55,5 @@ func main() {
 	}
 	npcGenerator.NPCListController.DeleteAllNPCs()
 
+	fmt.Println("Done.")
 }

@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/lackmus/npcgengo"
@@ -273,5 +275,99 @@ func TestSettlementListController_AddRandomNPCsToSettlement_RequiresConfiguredNP
 	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 1)
 	if err == nil {
 		t.Fatal("AddRandomNPCsToSettlement() expected npc generator configuration error, got nil")
+	}
+}
+
+func TestSettlementListController_AddRandomNPCsToSettlement_PropagatesGeneratorError(t *testing.T) {
+	existing := validControllerSettlement("Barkstone")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	call := 0
+	deleted := make([]string, 0)
+	ctrl.settlementNPCProvider = &SettlementNPCProvider{
+		createRandomNPCFn: func() (string, error) {
+			call++
+			if call == 2 {
+				return "", errors.New("generator failed")
+			}
+			return fmt.Sprintf("npc-%d", call), nil
+		},
+		deleteNPCFn: func(id string) error {
+			deleted = append(deleted, id)
+			return nil
+		},
+	}
+
+	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 3)
+	if err == nil {
+		t.Fatal("AddRandomNPCsToSettlement() expected generator error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed generating npc 2/3") {
+		t.Fatalf("expected indexed generation error, got: %v", err)
+	}
+	if len(storage.saved) != 0 {
+		t.Fatalf("expected settlement to remain unpersisted on generation failure; saved=%d", len(storage.saved))
+	}
+	if len(deleted) != 1 || deleted[0] != "npc-1" {
+		t.Fatalf("expected rollback to delete first generated npc; got %v", deleted)
+	}
+}
+
+func TestSettlementListController_AddRandomNPCsToSettlement_FailsOnEmptyGeneratedID(t *testing.T) {
+	existing := validControllerSettlement("Oakshade")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	ctrl.settlementNPCProvider = &SettlementNPCProvider{
+		createRandomNPCFn: func() (string, error) {
+			return "", nil
+		},
+	}
+
+	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 1)
+	if err == nil {
+		t.Fatal("AddRandomNPCsToSettlement() expected empty ID error, got nil")
+	}
+	if !strings.Contains(err.Error(), "generated npc id is empty") {
+		t.Fatalf("expected empty id error, got: %v", err)
+	}
+	if len(storage.saved) != 0 {
+		t.Fatalf("expected settlement to remain unpersisted on empty generated ID; saved=%d", len(storage.saved))
+	}
+}
+
+func TestSettlementListController_AddRandomNPCsToSettlement_RollsBackOnUpdateFailure(t *testing.T) {
+	existing := validControllerSettlement("Mossden")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}, failSave: true}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	generated := []string{"npc-a", "npc-b"}
+	idx := 0
+	deleted := make([]string, 0)
+	ctrl.settlementNPCProvider = &SettlementNPCProvider{
+		createRandomNPCFn: func() (string, error) {
+			id := generated[idx]
+			idx++
+			return id, nil
+		},
+		deleteNPCFn: func(id string) error {
+			deleted = append(deleted, id)
+			return nil
+		},
+	}
+
+	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 2)
+	if err == nil {
+		t.Fatal("AddRandomNPCsToSettlement() expected update error, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to update settlement after npc generation") {
+		t.Fatalf("expected wrapped update error, got: %v", err)
+	}
+	if len(deleted) != 2 || deleted[0] != "npc-a" || deleted[1] != "npc-b" {
+		t.Fatalf("expected rollback deletion of generated ids, got %v", deleted)
 	}
 }

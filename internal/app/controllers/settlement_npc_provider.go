@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/lackmus/npcgengo"
@@ -57,17 +58,19 @@ func (s *SettlementNPCProvider) DeleteAllNPCsFromSettlement(settlement *model.Se
 }
 
 func (s *SettlementNPCProvider) DeleteNPC(npcID string, settlement *model.Settlement) (*model.Settlement, error) {
-	if s == nil {
-		return &model.Settlement{}, fmt.Errorf("settlement npc provider is not initialized")
-	}
-	if s.gateway == nil {
-		return &model.Settlement{}, fmt.Errorf("npc generator is not configured")
+	if err := s.validateProviderInput(settlement); err != nil {
+		return &model.Settlement{}, err
 	}
 	if npcID == "" {
 		return &model.Settlement{}, fmt.Errorf("npc id is empty")
 	}
-	settlement.RemoveNPC(npcID)
-	return settlement, s.gateway.DeleteNPC(npcID)
+	if err := s.gateway.DeleteNPC(npcID); err != nil {
+		return &model.Settlement{}, fmt.Errorf("failed to delete npc %q from gateway: %w", npcID, err)
+	}
+	if err := s.DeleteNPCFromSettlement(settlement, npcID); err != nil {
+		return &model.Settlement{}, fmt.Errorf("failed to delete npc %q from settlement %q: %w", npcID, settlement.Name, err)
+	}
+	return settlement, nil
 }
 
 func (s *SettlementNPCProvider) DeleteNPCBatch(ids []string) error {
@@ -77,9 +80,9 @@ func (s *SettlementNPCProvider) DeleteNPCBatch(ids []string) error {
 	if s.gateway == nil {
 		return fmt.Errorf("npc generator is not configured")
 	}
-	for _, id := range ids {
+	for i, id := range ids {
 		if id == "" {
-			continue
+			return fmt.Errorf("npc id is empty at index %d", i)
 		}
 		if err := s.gateway.DeleteNPC(id); err != nil {
 			return err
@@ -90,7 +93,7 @@ func (s *SettlementNPCProvider) DeleteNPCBatch(ids []string) error {
 
 func (s *SettlementNPCProvider) validateProviderInput(settlement *model.Settlement) error {
 	if s == nil {
-		return fmt.Errorf("settlement NPC provider is not initialized")
+		return fmt.Errorf("settlement npc provider is not initialized")
 	}
 	if s.gateway == nil {
 		return fmt.Errorf("npc generator is not configured")
@@ -181,7 +184,7 @@ func (s *SettlementNPCProvider) appendGeneratedNPCIDOrRollback(settlement *model
 
 func (s *SettlementNPCProvider) rollbackGeneratedNPCBatch(settlement *model.Settlement, generatedNPCIDs []string, cause error) error {
 	if cleanupErr := s.DeleteNPCBatch(generatedNPCIDs); cleanupErr != nil {
-		return fmt.Errorf("%w (rollback failed: %v)", cause, cleanupErr)
+		return errors.Join(cause, fmt.Errorf("rollback failed: %w", cleanupErr))
 	}
 	if settlement != nil {
 		for _, id := range generatedNPCIDs {

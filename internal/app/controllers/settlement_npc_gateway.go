@@ -51,7 +51,7 @@ func (g *settlementNPCGateway) CreateRandomNPCAndID() (string, error) {
 
 func (g *settlementNPCGateway) DeleteNPC(id string) error {
 	if id == "" {
-		return nil
+		return fmt.Errorf("npc id is empty")
 	}
 	if g.npcGenerator.NPCListController == nil {
 		return fmt.Errorf("npc generator is not configured")

@@ -8,10 +8,12 @@ import (
 )
 
 type mockSettlementStorage struct {
-	saved       []model.Settlement
-	settlements []model.Settlement
-	failSave    bool
-	failLoadAll bool
+	saved         []model.Settlement
+	settlements   []model.Settlement
+	failSave      bool
+	failLoadAll   bool
+	failDelete    bool
+	failDeleteAll bool
 }
 
 func (m *mockSettlementStorage) LoadSettlement(name string) (model.Settlement, error) {
@@ -44,10 +46,16 @@ func (m *mockSettlementStorage) SaveAllSettlements(settlements []model.Settlemen
 }
 
 func (m *mockSettlementStorage) DeleteSettlement(name string) error {
+	if m.failDelete {
+		return errors.New("delete failed")
+	}
 	return nil
 }
 
 func (m *mockSettlementStorage) DeleteAllSettlements() error {
+	if m.failDeleteAll {
+		return errors.New("delete all failed")
+	}
 	m.settlements = nil
 	return nil
 }
@@ -100,6 +108,19 @@ func TestSettlementService_AddSettlementSavesValid(t *testing.T) {
 	}
 }
 
+func TestSettlementService_AddSettlement_SaveFailureDoesNotMutateInMemory(t *testing.T) {
+	storage := &mockSettlementStorage{failSave: true}
+	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{}}
+
+	err := svc.AddSettlement(validSettlement("Stonebridge"))
+	if err == nil {
+		t.Fatal("AddSettlement() expected save failure, got nil")
+	}
+	if len(svc.Settlements) != 0 {
+		t.Fatalf("AddSettlement() mutated in-memory list on save failure; got len=%d", len(svc.Settlements))
+	}
+}
+
 func TestSettlementService_UpdateSettlementRejectsInvalid(t *testing.T) {
 	existing := validSettlement("Old Oak")
 	storage := &mockSettlementStorage{}
@@ -127,6 +148,50 @@ func TestSettlementService_UpdateSettlementNotFound(t *testing.T) {
 	err := svc.UpdateSettlement(validSettlement("Missing"))
 	if err == nil {
 		t.Fatal("UpdateSettlement() expected not found error, got nil")
+	}
+}
+
+func TestSettlementService_UpdateSettlement_SaveFailureDoesNotMutateInMemory(t *testing.T) {
+	existing := validSettlement("Hillford")
+	storage := &mockSettlementStorage{failSave: true}
+	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+
+	updated := existing
+	updated.Notes = "Updated"
+
+	err := svc.UpdateSettlement(updated)
+	if err == nil {
+		t.Fatal("UpdateSettlement() expected save failure, got nil")
+	}
+	if svc.Settlements[0].Notes != existing.Notes {
+		t.Fatalf("UpdateSettlement() mutated in-memory state on save failure; got notes=%q", svc.Settlements[0].Notes)
+	}
+}
+
+func TestSettlementService_RemoveSettlement_DeleteFailureDoesNotMutateInMemory(t *testing.T) {
+	existing := validSettlement("Riversend")
+	storage := &mockSettlementStorage{failDelete: true}
+	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+
+	err := svc.RemoveSettlement(existing.Name)
+	if err == nil {
+		t.Fatal("RemoveSettlement() expected delete failure, got nil")
+	}
+	if len(svc.Settlements) != 1 || svc.Settlements[0].Name != existing.Name {
+		t.Fatalf("RemoveSettlement() mutated in-memory state on delete failure; got %+v", svc.Settlements)
+	}
+}
+
+func TestSettlementService_DeleteAllSettlements_DeleteFailureDoesNotMutateInMemory(t *testing.T) {
+	storage := &mockSettlementStorage{failDeleteAll: true}
+	svc := SettlementService{Storage: storage, Settlements: []model.Settlement{validSettlement("Northwatch")}}
+
+	err := svc.DeleteAllSettlements()
+	if err == nil {
+		t.Fatal("DeleteAllSettlements() expected delete all failure, got nil")
+	}
+	if len(svc.Settlements) != 1 {
+		t.Fatalf("DeleteAllSettlements() mutated in-memory state on delete all failure; got len=%d", len(svc.Settlements))
 	}
 }
 

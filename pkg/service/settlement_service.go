@@ -32,27 +32,39 @@ func (s *SettlementService) AddSettlement(settlement model.Settlement) error {
 
 	for i, existing := range s.Settlements {
 		if existing.Name == settlement.Name {
+			if err := s.Storage.SaveSettlement(settlement); err != nil {
+				return err
+			}
 			s.Settlements[i] = settlement
-			return s.Storage.SaveSettlement(settlement)
+			return nil
 		}
 	}
+	if err := s.Storage.SaveSettlement(settlement); err != nil {
+		return err
+	}
 	s.Settlements = append(s.Settlements, settlement)
-	return s.Storage.SaveSettlement(settlement)
+	return nil
 }
 
 func (s *SettlementService) RemoveSettlement(name string) error {
 	for i, settlement := range s.Settlements {
 		if settlement.Name == name {
+			if err := s.Storage.DeleteSettlement(name); err != nil {
+				return err
+			}
 			s.Settlements = append(s.Settlements[:i], s.Settlements[i+1:]...)
-			return s.Storage.DeleteSettlement(name)
+			return nil
 		}
 	}
 	return nil
 }
 
 func (s *SettlementService) DeleteAllSettlements() error {
+	if err := s.Storage.DeleteAllSettlements(); err != nil {
+		return err
+	}
 	s.Settlements = []model.Settlement{}
-	return s.Storage.DeleteAllSettlements()
+	return nil
 }
 
 func (s *SettlementService) GetSettlement(name string) (model.Settlement, error) {
@@ -91,8 +103,11 @@ func (s *SettlementService) UpdateSettlement(settlement model.Settlement) error 
 
 	for i, currentSettlement := range s.Settlements {
 		if currentSettlement.Name == settlement.Name {
+			if err := s.Storage.SaveSettlement(settlement); err != nil {
+				return err
+			}
 			s.Settlements[i] = settlement
-			return s.Storage.SaveSettlement(settlement)
+			return nil
 		}
 	}
 

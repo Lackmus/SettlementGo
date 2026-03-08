@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/lackmus/settlementgengo/pkg/model"
@@ -106,7 +107,7 @@ func (c *SettlementListController) generatedNPCIDs(settlement model.Settlement, 
 
 func (c *SettlementListController) rollbackGeneratedNPCs(generatedNPCIDs []string, cause error) error {
 	if cleanupErr := c.settlementNPCProvider.DeleteNPCBatch(generatedNPCIDs); cleanupErr != nil {
-		return fmt.Errorf("%w (rollback failed: %v)", cause, cleanupErr)
+		return errors.Join(cause, fmt.Errorf("rollback failed: %w", cleanupErr))
 	}
 	return cause
 }
@@ -160,14 +161,43 @@ func (c *SettlementListController) MoveNPCBetweenSettlements(sourceName string, 
 	if err := c.settlementNPCProvider.DeleteNPCFromSettlement(&sourceSettlement, npcID); err != nil {
 		return fmt.Errorf("failed to delete npc %q from source settlement %q: %w", npcID, sourceName, err)
 	}
-	if err := c.UpdateSettlement(sourceSettlement); err != nil {
-		return fmt.Errorf("failed to update source settlement after npc deletion: %w", err)
-	}
 	if err := c.settlementNPCProvider.AddNPCToSettlement(&targetSettlement, npcID); err != nil {
 		return fmt.Errorf("failed to add npc %q to target settlement %q: %w", npcID, targetName, err)
 	}
 	if err := c.UpdateSettlement(targetSettlement); err != nil {
 		return fmt.Errorf("failed to update target settlement after npc addition: %w", err)
+	}
+	if err := c.UpdateSettlement(sourceSettlement); err != nil {
+		rollbackErr := c.rollbackMoveTarget(targetSettlement, targetName, npcID)
+		sourceRollbackErr := c.rollbackMoveSource(sourceSettlement, sourceName, npcID)
+		if rollbackErr != nil || sourceRollbackErr != nil {
+			return errors.Join(
+				fmt.Errorf("failed to update source settlement after npc move: %w", err),
+				rollbackErr,
+				sourceRollbackErr,
+			)
+		}
+		return fmt.Errorf("failed to update source settlement after npc move: %w", err)
+	}
+	return nil
+}
+
+func (c *SettlementListController) rollbackMoveTarget(targetSettlement model.Settlement, targetName string, npcID string) error {
+	if err := c.settlementNPCProvider.DeleteNPCFromSettlement(&targetSettlement, npcID); err != nil {
+		return fmt.Errorf("failed to remove npc %q from target settlement %q during rollback: %w", npcID, targetName, err)
+	}
+	if err := c.UpdateSettlement(targetSettlement); err != nil {
+		return fmt.Errorf("failed to persist target settlement %q during rollback: %w", targetName, err)
+	}
+	return nil
+}
+
+func (c *SettlementListController) rollbackMoveSource(sourceSettlement model.Settlement, sourceName string, npcID string) error {
+	if err := c.settlementNPCProvider.AddNPCToSettlement(&sourceSettlement, npcID); err != nil {
+		return fmt.Errorf("failed to re-add npc %q to source settlement %q during rollback: %w", npcID, sourceName, err)
+	}
+	if err := c.UpdateSettlement(sourceSettlement); err != nil {
+		return fmt.Errorf("failed to persist source settlement %q during rollback: %w", sourceName, err)
 	}
 	return nil
 }

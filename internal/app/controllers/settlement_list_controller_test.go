@@ -67,6 +67,7 @@ func newTestNPCGen(t *testing.T) *npcgengo.NPCGen {
 type controllerMockStorage struct {
 	failSave      bool
 	failDeleteAll bool
+	saveErrByName map[string]error
 	saved         []model.Settlement
 	all           []model.Settlement
 }
@@ -90,6 +91,9 @@ func (m *controllerMockStorage) LoadAllSettlements() ([]model.Settlement, error)
 }
 
 func (m *controllerMockStorage) SaveSettlement(settlement model.Settlement) error {
+	if err, ok := m.saveErrByName[settlement.Name]; ok {
+		return err
+	}
 	if m.failSave {
 		return errors.New("save failed")
 	}
@@ -415,5 +419,72 @@ func TestSettlementListController_AddNPCToSettlement_RollsBackOnUpdateFailure(t 
 	}
 	if len(deleted) != 1 || deleted[0] != "npc-rollback" {
 		t.Fatalf("expected rollback deletion of generated id, got %v", deleted)
+	}
+}
+
+func TestSettlementListController_AddRandomNPCsToSettlement_JoinsRollbackFailure(t *testing.T) {
+	existing := validControllerSettlement("Willowrest")
+	storage := &controllerMockStorage{all: []model.Settlement{existing}, failSave: true}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{existing}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+
+	genID := "npc-join"
+	cleanupErr := errors.New("cleanup failed")
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{
+		createRandomNPCIDFn: func() (string, error) {
+			return genID, nil
+		},
+		deleteNPCByIDFn: func(id string) error {
+			return cleanupErr
+		},
+	})
+
+	_, err := ctrl.AddRandomNPCsToSettlement(existing.Name, 1)
+	if err == nil {
+		t.Fatal("AddRandomNPCsToSettlement() expected failure, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to update settlement after npc generation") {
+		t.Fatalf("expected wrapped update error, got: %v", err)
+	}
+	if !errors.Is(err, cleanupErr) {
+		t.Fatalf("expected joined rollback cleanup error, got: %v", err)
+	}
+}
+
+func TestSettlementListController_MoveNPCBetweenSettlements_RollsBackTargetOnSourceUpdateFailure(t *testing.T) {
+	source := validControllerSettlement("Source")
+	source.NPCs = []string{"npc-1"}
+	target := validControllerSettlement("Target")
+
+	storage := &controllerMockStorage{
+		all:           []model.Settlement{source, target},
+		saveErrByName: map[string]error{"Source": errors.New("source save failed")},
+	}
+	svc := service.SettlementService{Storage: storage, Settlements: []model.Settlement{source, target}}
+	ctrl := NewSettlementListController(svc, service.SettlementCreationSupplier{}, npcgengo.NPCGen{})
+	ctrl.settlementNPCProvider = newSettlementNPCProviderWithGateway(&mockNPCGateway{})
+
+	err := ctrl.MoveNPCBetweenSettlements("Source", "Target", "npc-1")
+	if err == nil {
+		t.Fatal("MoveNPCBetweenSettlements() expected source update failure, got nil")
+	}
+	if !strings.Contains(err.Error(), "failed to update source settlement after npc move") {
+		t.Fatalf("expected wrapped source update failure, got: %v", err)
+	}
+
+	updatedSource, getSourceErr := ctrl.GetSettlement("Source")
+	if getSourceErr != nil {
+		t.Fatalf("GetSettlement(Source) unexpected error: %v", getSourceErr)
+	}
+	if len(updatedSource.NPCs) != 1 || updatedSource.NPCs[0] != "npc-1" {
+		t.Fatalf("expected source settlement to retain npc after rollback, got %v", updatedSource.NPCs)
+	}
+
+	updatedTarget, getTargetErr := ctrl.GetSettlement("Target")
+	if getTargetErr != nil {
+		t.Fatalf("GetSettlement(Target) unexpected error: %v", getTargetErr)
+	}
+	if len(updatedTarget.NPCs) != 0 {
+		t.Fatalf("expected target settlement rollback to remove moved npc, got %v", updatedTarget.NPCs)
 	}
 }

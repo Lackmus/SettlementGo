@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	npcmapper "github.com/lackmus/npcgengo/pkg/mapper"
 	h "github.com/lackmus/settlementgengo/internal/platform/helpers"
 	"github.com/lackmus/settlementgengo/pkg/model"
 )
@@ -13,6 +14,26 @@ type SettlementInputMapper struct {
 	XCoord     int
 	YCoord     int
 	NPCIDs     []string
+}
+
+type SettlementCreateInput struct {
+	Name                  string `json:"name"`
+	Faction               string `json:"faction"`
+	XCoord                int    `json:"xCoord"`
+	YCoord                int    `json:"yCoord"`
+	Population            int    `json:"population"`
+	Notes                 string `json:"notes"`
+	InitialRandomNPCCount int    `json:"initialRandomNpcCount"`
+}
+
+type SettlementView struct {
+	Name       string               `json:"name"`
+	Faction    string               `json:"faction"`
+	XCoord     int                  `json:"xCoord"`
+	YCoord     int                  `json:"yCoord"`
+	Population int                  `json:"population"`
+	Notes      string               `json:"notes"`
+	NPCs       []npcmapper.NPCInput `json:"npcs"`
 }
 
 func ToSettlementInput(settlementInput model.Settlement) SettlementInputMapper {

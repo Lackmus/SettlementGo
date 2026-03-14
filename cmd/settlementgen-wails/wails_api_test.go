@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	settlementapp "github.com/lackmus/settlementgengo/internal/app"
+	appmapper "github.com/lackmus/settlementgengo/internal/app/mapper"
 )
 
 func copyDir(t *testing.T, src, dst string) {
@@ -107,7 +108,7 @@ func TestWailsAPI_CreateRandomSettlementWithNPCs_ResolvesNPCs(t *testing.T) {
 func TestWailsAPI_AddAndDeleteNPCFromSettlement(t *testing.T) {
 	api := newWailsAPIForTests(t)
 
-	created, err := api.CreateSettlement(SettlementCreateInput{
+	created, err := api.CreateSettlement(appmapper.SettlementCreateInput{
 		Name:       "Iron Hollow",
 		Faction:    api.GetCreationOptions().Factions[0],
 		Population: 240,

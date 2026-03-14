@@ -39,6 +39,9 @@ const elements = {
   detailPopulation: document.querySelector("#detailPopulation"),
   detailNpcCount: document.querySelector("#detailNpcCount"),
   detailNotes: document.querySelector("#detailNotes"),
+  npcPanel: document.querySelector("#npcPanel"),
+  npcPanelEmptyState: document.querySelector("#npcPanelEmptyState"),
+  npcPanelContent: document.querySelector("#npcPanelContent"),
   editSettlementButton: document.querySelector("#editSettlementButton"),
   settlementEditForm: document.querySelector("#settlementEditForm"),
   editSettlementName: document.querySelector("#editSettlementName"),
@@ -403,8 +406,6 @@ function renderSettlementList() {
     }
 
     const faction = settlement.faction || "Unknown faction";
-    const notes = settlement.notes || "No notes recorded.";
-
     card.innerHTML = `
       <button type="button" class="select-card">
         <div class="card-header">
@@ -417,7 +418,6 @@ function renderSettlementList() {
         <div class="pill-row">
           <span class="pill">Population ${settlement.population}</span>
         </div>
-        <p class="meta-line">${notes}</p>
       </button>
     `;
 
@@ -441,6 +441,8 @@ function renderDetailPane() {
 
   elements.emptyState.classList.toggle("hidden", hasSelection);
   elements.detailContent.classList.toggle("hidden", !hasSelection);
+  elements.npcPanelEmptyState.classList.toggle("hidden", hasSelection);
+  elements.npcPanelContent.classList.toggle("hidden", !hasSelection);
   elements.deleteSettlementButton.disabled = !hasSelection;
   elements.purgeSettlementNpcsButton.disabled = !hasSelection;
   elements.addRandomNpcButton.disabled = !hasSelection;
@@ -458,10 +460,10 @@ function renderDetailPane() {
   }
 
   elements.detailTitle.textContent = settlement.name;
-  elements.detailFaction.textContent = settlement.faction || "-";
-  elements.detailPopulation.textContent = String(settlement.population ?? 0);
-  elements.detailNpcCount.textContent = String(settlement.npcs.length);
-  elements.detailNotes.textContent = settlement.notes || "No notes recorded.";
+  elements.detailFaction.value = settlement.faction || "-";
+  elements.detailPopulation.value = String(settlement.population ?? 0);
+  elements.detailNpcCount.value = String(settlement.npcs.length);
+  elements.detailNotes.value = settlement.notes || "No notes recorded.";
   populateSettlementEditForm(settlement);
 
   elements.npcList.innerHTML = "";
@@ -482,6 +484,9 @@ function renderDetailPane() {
       card.classList.add("active");
     }
     card.innerHTML = `
+      <div class="button-row">
+        <button type="button" class="ghost danger">Delete</button>
+      </div>
       <div class="npc-header">
         <div>
           <h3 class="npc-name" role="button" tabindex="0">${npc.name || npc.id}</h3>
@@ -490,9 +495,6 @@ function renderDetailPane() {
         <span class="pill">${npc.species || "Unknown species"}</span>
       </div>
       <p class="meta-line"><strong>Faction:</strong> ${npc.faction || "-"}</p>
-      <div class="button-row">
-        <button type="button" class="ghost danger">Delete</button>
-      </div>
     `;
 
     const nameButton = card.querySelector(".npc-name");

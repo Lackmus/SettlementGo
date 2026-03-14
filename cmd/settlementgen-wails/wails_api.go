@@ -6,11 +6,17 @@ import (
 	"strings"
 
 	npcmapper "github.com/lackmus/npcgengo/pkg/mapper"
+	npcmodel "github.com/lackmus/npcgengo/pkg/model"
 	settlementapp "github.com/lackmus/settlementgengo/internal/app"
 	"github.com/lackmus/settlementgengo/internal/app/controllers"
 	appmapper "github.com/lackmus/settlementgengo/internal/app/mapper"
 	settlementservice "github.com/lackmus/settlementgengo/pkg/service"
 )
+
+type SubtypeRoll struct {
+	Stats string `json:"stats"`
+	Items string `json:"items"`
+}
 
 type WailsAPI struct {
 	ctx context.Context
@@ -55,6 +61,70 @@ func (a *WailsAPI) GetCreationOptions() controllers.CreationOptions {
 		return controllers.CreationOptions{}
 	}
 	return options
+}
+
+func (a *WailsAPI) GetNPC(id string) (npcmapper.NPCInput, error) {
+	controller := a.app.NpcGenerator.NPCListController
+	if controller == nil {
+		return npcmapper.NPCInput{}, fmt.Errorf("npc controller is not configured")
+	}
+	npc, err := controller.GetNPCByID(strings.TrimSpace(id))
+	if err != nil {
+		return npcmapper.NPCInput{}, err
+	}
+	return npcmapper.ToNPCInput(npc), nil
+}
+
+func (a *WailsAPI) SaveNPC(input npcmapper.NPCInput) (npcmapper.NPCInput, error) {
+	controller := a.app.NpcGenerator.NPCListController
+	if controller == nil {
+		return npcmapper.NPCInput{}, fmt.Errorf("npc controller is not configured")
+	}
+
+	trimmedID := strings.TrimSpace(input.ID)
+	if trimmedID == "" {
+		return npcmapper.NPCInput{}, fmt.Errorf("cannot save without an id")
+	}
+
+	original, err := controller.GetNPCByID(trimmedID)
+	if err != nil {
+		return npcmapper.NPCInput{}, err
+	}
+
+	npc, err := npcmapper.ToModelNPCWithOriginal(input, controller.GetNPCBuilder(), &original)
+	if err != nil {
+		return npcmapper.NPCInput{}, err
+	}
+
+	if err := controller.ValidateNPC(npc); err != nil {
+		return npcmapper.NPCInput{}, err
+	}
+
+	controller.UpdateNPC(npc)
+	return npcmapper.ToNPCInput(npc), nil
+}
+
+func (a *WailsAPI) RollSubtypeFields(subtype string) (SubtypeRoll, error) {
+	controller := a.app.NpcGenerator.NPCListController
+	if controller == nil {
+		return SubtypeRoll{}, fmt.Errorf("npc controller is not configured")
+	}
+
+	stats, items, err := controller.GetSubtypeFields(strings.TrimSpace(subtype))
+	if err != nil {
+		return SubtypeRoll{}, err
+	}
+
+	return SubtypeRoll{Stats: stats, Items: items}, nil
+}
+
+func (a *WailsAPI) RollSpeciesName(species string) (string, error) {
+	controller := a.app.NpcGenerator.NPCListController
+	if controller == nil {
+		return "", fmt.Errorf("npc controller is not configured")
+	}
+
+	return controller.GetSpeciesName(strings.TrimSpace(species))
 }
 
 func (a *WailsAPI) CreateSettlement(input appmapper.SettlementCreateInput) (appmapper.SettlementView, error) {
@@ -196,37 +266,36 @@ func (a *WailsAPI) DeleteAllSettlements() error {
 }
 
 func (a *WailsAPI) toSettlementView(settlement appmapper.SettlementInputMapper) appmapper.SettlementView {
-	npcs := make([]npcmapper.NPCInput, 0, len(settlement.NPCIDs))
 	controller := a.app.NpcGenerator.NPCListController
 
-	for _, npcID := range settlement.NPCIDs {
-		if controller == nil {
-			npcs = append(npcs, npcmapper.NPCInput{ID: npcID, Name: "NPC controller unavailable"})
-			continue
-		}
+	if controller == nil {
+		return appmapper.ToSettlementView(settlement, nil)
+	}
 
-		npc, err := controller.GetNPCByID(npcID)
+	return appmapper.ToSettlementView(settlement, func(id string) (npcmapper.NPCInput, error) {
+		npc, err := controller.GetNPCByID(id)
 		if err != nil {
-			npcs = append(npcs, npcmapper.NPCInput{
-				ID:    npcID,
-				Name:  "Missing NPC",
-				Notes: fmt.Sprintf("Failed to load NPC: %v", err),
-			})
-			continue
+			return npcmapper.NPCInput{}, err
 		}
+		return npcmapper.ToNPCInput(npc), nil
+	})
+}
 
-		npcs = append(npcs, npcmapper.ToNPCInput(npc))
+func (a *WailsAPI) updateNPCInSettlements(updated npcmodel.NPC) error {
+	settlements, err := a.app.SettlementController.GetAllSettlements()
+	if err != nil {
+		return err
 	}
 
-	return appmapper.SettlementView{
-		Name:       settlement.Name,
-		Faction:    settlement.Faction,
-		XCoord:     settlement.XCoord,
-		YCoord:     settlement.YCoord,
-		Population: settlement.Population,
-		Notes:      settlement.Notes,
-		NPCs:       npcs,
+	for _, settlement := range settlements {
+		for _, npcID := range settlement.NPCs {
+			if npcID == updated.ID {
+				return nil
+			}
+		}
 	}
+
+	return nil
 }
 
 func (a *WailsAPI) deleteNPCRecords(ids []string) error {

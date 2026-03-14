@@ -1,10 +1,14 @@
 package mapper
 
 import (
+	"fmt"
+
 	npcmapper "github.com/lackmus/npcgengo/pkg/mapper"
 	h "github.com/lackmus/settlementgengo/internal/platform/helpers"
 	"github.com/lackmus/settlementgengo/pkg/model"
 )
+
+type NPCResolver func(id string) (npcmapper.NPCInput, error)
 
 type SettlementInputMapper struct {
 	Name       string
@@ -74,4 +78,37 @@ func ToSettlementModelValidated(input SettlementInputMapper) (model.Settlement, 
 		return model.Settlement{}, err
 	}
 	return settlement, nil
+}
+
+func ToSettlementView(input SettlementInputMapper, resolver NPCResolver) SettlementView {
+	npcs := make([]npcmapper.NPCInput, 0, len(input.NPCIDs))
+
+	for _, npcID := range input.NPCIDs {
+		if resolver == nil {
+			npcs = append(npcs, npcmapper.NPCInput{ID: npcID, Name: "NPC controller unavailable"})
+			continue
+		}
+
+		npc, err := resolver(npcID)
+		if err != nil {
+			npcs = append(npcs, npcmapper.NPCInput{
+				ID:    npcID,
+				Name:  "Missing NPC",
+				Notes: fmt.Sprintf("Failed to load NPC: %v", err),
+			})
+			continue
+		}
+
+		npcs = append(npcs, npc)
+	}
+
+	return SettlementView{
+		Name:       input.Name,
+		Faction:    input.Faction,
+		XCoord:     input.XCoord,
+		YCoord:     input.YCoord,
+		Population: input.Population,
+		Notes:      input.Notes,
+		NPCs:       npcs,
+	}
 }

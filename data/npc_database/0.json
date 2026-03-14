@@ -1,0 +1,14 @@
+{
+  "SchemaVersion": 1,
+  "ID": "0",
+  "Components": {
+    "1": "Rush Nightpounce",
+    "2": "military",
+    "3": "Captain",
+    "4": "Marten",
+    "5": "Eyrie Dynasties",
+    "6": "Impatient",
+    "7": "leadership: 3\ncombat: 10\nstrategy: 9",
+    "8": "weapons: Battle Axe\narmor: Commander's Chainmail\naccessories: Command Cloak"
+  }
+}

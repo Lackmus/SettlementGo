@@ -1,0 +1,14 @@
+{
+  "SchemaVersion": 1,
+  "ID": "1",
+  "Components": {
+    "1": "Chirp Stormwing",
+    "2": "civilian",
+    "3": "Healer",
+    "4": "Wren",
+    "5": "Eyrie Dynasties",
+    "6": "Treacherous",
+    "7": "medicine: 8\nempathy: 1\nfocus: 1",
+    "8": "tools: Needle and Thread\nclothing: Apron and Sleeves\naccessories: Belt Pouch"
+  }
+}

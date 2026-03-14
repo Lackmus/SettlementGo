@@ -9,6 +9,8 @@ function getBackend() {
 const state = {
   settlements: [],
   selectedName: "",
+  selectedNpcId: "",
+  selectedNpcSnapshot: null,
   creationOptions: {
     factions: [],
     npcTypes: [],
@@ -32,7 +34,6 @@ const elements = {
   detailTitle: document.querySelector("#detailTitle"),
   detailFaction: document.querySelector("#detailFaction"),
   detailPopulation: document.querySelector("#detailPopulation"),
-  detailCoords: document.querySelector("#detailCoords"),
   detailNpcCount: document.querySelector("#detailNpcCount"),
   detailNotes: document.querySelector("#detailNotes"),
   deleteSettlementButton: document.querySelector("#deleteSettlementButton"),
@@ -45,7 +46,197 @@ const elements = {
   statSettlements: document.querySelector("#statSettlements"),
   statNpcs: document.querySelector("#statNpcs"),
   statFaction: document.querySelector("#statFaction"),
+  npcDetails: document.querySelector("#npcDetails"),
+  btnCloseNpcDetail: document.querySelector("#btnCloseNpcDetail"),
+  btnEditNpcDetail: document.querySelector("#btnEditNpcDetail"),
+  npcForm: document.querySelector("#npcForm"),
+  fId: document.querySelector("#f_id"),
+  fName: document.querySelector("#f_name"),
+  fType: document.querySelector("#f_type"),
+  fSubtype: document.querySelector("#f_subtype"),
+  fSpecies: document.querySelector("#f_species"),
+  fFaction: document.querySelector("#f_faction"),
+  fTraits: document.querySelector("#f_traits"),
+  fStats: document.querySelector("#f_stats"),
+  fItems: document.querySelector("#f_items"),
+  fNotes: document.querySelector("#f_notes"),
+  btnReroll: document.querySelector("#btnReroll"),
+  btnRerollName: document.querySelector("#btnRerollName"),
+  btnSaveNpc: document.querySelector("#btnSaveNpc"),
+  btnCancelNpcEdit: document.querySelector("#btnCancelNpcEdit"),
+  dName: document.querySelector("#d_name"),
+  dType: document.querySelector("#d_type"),
+  dSubtype: document.querySelector("#d_subtype"),
+  dSpecies: document.querySelector("#d_species"),
+  dFaction: document.querySelector("#d_faction"),
+  dTraits: document.querySelector("#d_traits"),
+  dStats: document.querySelector("#d_stats"),
+  dItems: document.querySelector("#d_items"),
+  dNotes: document.querySelector("#d_notes"),
 };
+
+function selectedNpc() {
+  const settlement = selectedSettlement();
+  if (!settlement) {
+    return null;
+  }
+  return settlement.npcs.find((npc) => npc.id === state.selectedNpcId) || null;
+}
+
+function clearNpcDetailSelection() {
+  state.selectedNpcId = "";
+  state.selectedNpcSnapshot = null;
+}
+
+function textOrDash(value) {
+  const normalized = String(value ?? "").trim();
+  return normalized || "-";
+}
+
+function isPresent(value) {
+  return String(value ?? "").trim().length > 0;
+}
+
+function setSelectOptions(select, values, includeEmpty = true) {
+  if (!select) {
+    return;
+  }
+
+  const currentValue = select.value;
+  select.innerHTML = "";
+
+  if (includeEmpty) {
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "";
+    select.append(empty);
+  }
+
+  for (const value of values || []) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.append(option);
+  }
+
+  if (currentValue && Array.from(select.options).some((option) => option.value === currentValue)) {
+    select.value = currentValue;
+  }
+}
+
+function setSelectValue(select, value) {
+  if (!select) {
+    return;
+  }
+  const desired = value || "";
+  if (desired && !Array.from(select.options).some((option) => option.value === desired)) {
+    const option = document.createElement("option");
+    option.value = desired;
+    option.textContent = desired;
+    select.append(option);
+  }
+  select.value = desired;
+}
+
+function showNpcDetailsPanel() {
+  elements.npcDetails.classList.remove("hidden");
+  elements.npcForm.classList.add("hidden");
+}
+
+function showNpcEditPanel() {
+  elements.npcDetails.classList.add("hidden");
+  elements.npcForm.classList.remove("hidden");
+}
+
+function updateSubtypeDropdown(selectedType, selectedSubtype = "") {
+  const subtypeMap = state.creationOptions.npcSubtypeForTypeMap || {};
+  const subtypes = subtypeMap[selectedType] || [];
+  setSelectOptions(elements.fSubtype, subtypes, true);
+  setSelectValue(elements.fSubtype, selectedSubtype);
+  elements.fSubtype.disabled = !isPresent(selectedType);
+  elements.btnReroll.disabled = !isPresent(elements.fSubtype.value);
+}
+
+function updateSpeciesDropdown(selectedFaction, selectedSpecies = "") {
+  const speciesMap = state.creationOptions.npcSpeciesForFactionMap || {};
+  const species = speciesMap[selectedFaction] || [];
+  setSelectOptions(elements.fSpecies, species, true);
+  setSelectValue(elements.fSpecies, selectedSpecies);
+  elements.fSpecies.disabled = !isPresent(selectedFaction);
+  elements.btnRerollName.disabled = !isPresent(elements.fSpecies.value);
+}
+
+function setNpcForm(npc) {
+  state.selectedNpcSnapshot = npc ? { ...npc } : null;
+  elements.fId.value = npc?.id || "";
+  elements.fName.value = npc?.name || "";
+  setSelectValue(elements.fType, npc?.type || "");
+  updateSubtypeDropdown(npc?.type || "", npc?.subtype || "");
+  setSelectValue(elements.fFaction, npc?.faction || "");
+  updateSpeciesDropdown(npc?.faction || "", npc?.species || "");
+  const trait = (npc?.trait || "").split(",")[0]?.trim() || "";
+  setSelectValue(elements.fTraits, trait);
+  elements.fStats.textContent = npc?.stats || "-";
+  elements.fItems.textContent = npc?.items || "-";
+  elements.fNotes.value = npc?.notes || "";
+}
+
+function readNpcForm() {
+  const statsValue = (elements.fStats.textContent || "").trim();
+  const itemsValue = (elements.fItems.textContent || "").trim();
+  return {
+    id: elements.fId.value || "",
+    name: elements.fName.value || "",
+    type: elements.fType.value || "",
+    subtype: elements.fSubtype.value || "",
+    species: elements.fSpecies.value || "",
+    faction: elements.fFaction.value || "",
+    trait: elements.fTraits.value || "",
+    stats: statsValue === "-" ? "" : statsValue,
+    items: itemsValue === "-" ? "" : itemsValue,
+    notes: elements.fNotes.value || "",
+  };
+}
+
+async function applySubtypeRoll(subtype) {
+  if (!isPresent(subtype)) {
+    elements.fStats.textContent = "-";
+    elements.fItems.textContent = "-";
+    return;
+  }
+  const rolled = await getBackend().RollSubtypeFields(subtype);
+  elements.fStats.textContent = rolled?.stats || rolled?.Stats || "-";
+  elements.fItems.textContent = rolled?.items || rolled?.Items || "-";
+}
+
+async function applySpeciesNameRoll(species) {
+  if (!isPresent(species)) {
+    elements.fName.value = "";
+    return;
+  }
+  const rolledName = await getBackend().RollSpeciesName(species);
+  elements.fName.value = rolledName || "";
+}
+
+function renderNpcDetails() {
+  const npc = selectedNpc();
+  if (!npc) {
+    elements.npcDetails.classList.add("hidden");
+    elements.npcForm.classList.add("hidden");
+    return;
+  }
+
+  showNpcDetailsPanel();
+  elements.dName.textContent = textOrDash(npc.name);
+  elements.dType.textContent = textOrDash(npc.type);
+  elements.dSubtype.textContent = textOrDash(npc.subtype);
+  elements.dSpecies.textContent = textOrDash(npc.species);
+  elements.dFaction.textContent = textOrDash(npc.faction);
+  elements.dTraits.textContent = textOrDash(npc.trait);
+  elements.dStats.textContent = textOrDash(npc.stats);
+  elements.dItems.textContent = textOrDash(npc.items);
+  elements.dNotes.textContent = textOrDash(npc.notes);
+}
 
 function selectedSettlement() {
   return state.settlements.find((settlement) => settlement.name === state.selectedName) || null;
@@ -128,7 +319,6 @@ function renderSettlementList() {
         </div>
         <div class="pill-row">
           <span class="pill">Population ${settlement.population}</span>
-          <span class="pill">Coords ${settlement.xCoord}, ${settlement.yCoord}</span>
         </div>
         <p class="meta-line">${notes}</p>
       </button>
@@ -136,6 +326,7 @@ function renderSettlementList() {
 
     card.querySelector("button").addEventListener("click", async () => {
       state.selectedName = settlement.name;
+      clearNpcDetailSelection();
       await refreshSelection();
     });
 
@@ -157,18 +348,20 @@ function renderDetailPane() {
   if (!settlement) {
     elements.detailTitle.textContent = "Select a settlement";
     elements.npcList.innerHTML = "";
+    elements.npcDetails.classList.add("hidden");
     return;
   }
 
   elements.detailTitle.textContent = settlement.name;
   elements.detailFaction.textContent = settlement.faction || "-";
   elements.detailPopulation.textContent = String(settlement.population ?? 0);
-  elements.detailCoords.textContent = `${settlement.xCoord}, ${settlement.yCoord}`;
   elements.detailNpcCount.textContent = String(settlement.npcs.length);
   elements.detailNotes.textContent = settlement.notes || "No notes recorded.";
 
   elements.npcList.innerHTML = "";
   if (settlement.npcs.length === 0) {
+    clearNpcDetailSelection();
+    renderNpcDetails();
     const empty = document.createElement("div");
     empty.className = "empty-state";
     empty.innerHTML = "<div><h3>No NPCs assigned</h3><p>Add a random or specific NPC to populate this settlement.</p></div>";
@@ -179,29 +372,34 @@ function renderDetailPane() {
   settlement.npcs.forEach((npc) => {
     const card = document.createElement("article");
     card.className = "npc-card";
+    if (state.selectedNpcId === npc.id) {
+      card.classList.add("active");
+    }
     card.innerHTML = `
       <div class="npc-header">
         <div>
           <h3>${npc.name || npc.id}</h3>
           <span class="meta">${npc.type || "Unknown type"} • ${npc.subtype || "Unknown subtype"}</span>
         </div>
-        <span class="pill">${npc.faction || "No faction"}</span>
+        <span class="pill">${npc.species || "Unknown species"}</span>
       </div>
-      <p class="meta-line"><strong>Species:</strong> ${npc.species || "-"}</p>
-      <p class="meta-line"><strong>Trait:</strong> ${npc.trait || "-"}</p>
-      <p class="meta-line"><strong>ID:</strong> ${npc.id}</p>
-      <p class="meta-line"><strong>Stats</strong></p>
-      <pre>${npc.stats || "-"}</pre>
-      <p class="meta-line"><strong>Items</strong></p>
-      <pre>${npc.items || "-"}</pre>
-      <p class="meta-line"><strong>Notes</strong></p>
-      <pre>${npc.notes || "-"}</pre>
+      <p class="meta-line"><strong>Faction:</strong> ${npc.faction || "-"}</p>
       <div class="button-row">
+        <button type="button" class="ghost">View</button>
         <button type="button" class="ghost danger">Delete NPC Record</button>
       </div>
     `;
 
-    card.querySelector("button").addEventListener("click", async () => {
+    const buttons = card.querySelectorAll("button");
+
+    buttons[0].addEventListener("click", async () => {
+      const loaded = await getBackend().GetNPC(npc.id);
+      state.selectedNpcId = loaded.id || npc.id;
+      setNpcForm(loaded);
+      renderDetailPane();
+    });
+
+    buttons[1].addEventListener("click", async () => {
       if (!window.confirm(`Delete NPC ${npc.name || npc.id} from ${settlement.name}?`)) {
         return;
       }
@@ -211,6 +409,14 @@ function renderDetailPane() {
 
     elements.npcList.append(card);
   });
+
+  if (!selectedNpc()) {
+    state.selectedNpcId = settlement.npcs[0]?.id || "";
+  }
+  if (selectedNpc()) {
+    setNpcForm(selectedNpc());
+  }
+  renderNpcDetails();
 }
 
 async function loadCreationOptions() {
@@ -218,6 +424,11 @@ async function loadCreationOptions() {
   populateSelect(elements.settlementFaction, state.creationOptions.factions, "Choose a faction");
   populateSelect(elements.npcFactionSelect, state.creationOptions.factions, "Match settlement faction");
   populateSelect(elements.npcTypeSelect, state.creationOptions.npcTypes, "Choose an NPC type");
+  setSelectOptions(elements.fType, state.creationOptions.npcTypes, true);
+  setSelectOptions(elements.fFaction, state.creationOptions.factions, true);
+  setSelectOptions(elements.fTraits, state.creationOptions.traits, true);
+  updateSubtypeDropdown("");
+  updateSpeciesDropdown("");
 }
 
 async function loadSettlements() {
@@ -293,8 +504,8 @@ function bindEvents() {
       faction: elements.settlementFaction.value.trim(),
       population: Number(document.querySelector("#settlementPopulation").value || 0),
       initialRandomNpcCount: Number(document.querySelector("#settlementNpcCount").value || 0),
-      xCoord: Number(document.querySelector("#settlementX").value || 0),
-      yCoord: Number(document.querySelector("#settlementY").value || 0),
+      xCoord: 0,
+      yCoord: 0,
       notes: document.querySelector("#settlementNotes").value.trim(),
     };
 
@@ -319,6 +530,7 @@ function bindEvents() {
     await mutate(async () => {
       await getBackend().DeleteAllSettlements();
       state.selectedName = "";
+      clearNpcDetailSelection();
       return null;
     }, "All settlements removed.");
   });
@@ -335,6 +547,7 @@ function bindEvents() {
     await mutate(async () => {
       await getBackend().DeleteSettlement(settlement.name);
       state.selectedName = "";
+      clearNpcDetailSelection();
       return null;
     }, `${settlement.name} deleted.`);
   });
@@ -370,6 +583,100 @@ function bindEvents() {
     const npcType = elements.npcTypeSelect.value;
     const faction = elements.npcFactionSelect.value || settlement.faction;
     await mutate(async () => getBackend().AddNPCToSettlement(settlement.name, npcType, faction), `Specific NPC added to ${settlement.name}.`);
+  });
+
+  elements.btnCloseNpcDetail.addEventListener("click", () => {
+    clearNpcDetailSelection();
+    renderNpcDetails();
+  });
+
+  elements.btnEditNpcDetail.addEventListener("click", () => {
+    if (!selectedNpc()) {
+      return;
+    }
+    showNpcEditPanel();
+  });
+
+  elements.fType.addEventListener("change", () => {
+    updateSubtypeDropdown(elements.fType.value);
+    elements.fStats.textContent = "-";
+    elements.fItems.textContent = "-";
+  });
+
+  elements.fFaction.addEventListener("change", () => {
+    updateSpeciesDropdown(elements.fFaction.value);
+    elements.fName.value = "";
+  });
+
+  elements.fSubtype.addEventListener("change", async () => {
+    elements.btnReroll.disabled = !isPresent(elements.fSubtype.value);
+    try {
+      await applySubtypeRoll(elements.fSubtype.value);
+    } catch (error) {
+      showMessage(error?.message || "Failed to roll subtype fields", "error");
+    }
+  });
+
+  elements.fSpecies.addEventListener("change", async () => {
+    elements.btnRerollName.disabled = !isPresent(elements.fSpecies.value);
+    try {
+      await applySpeciesNameRoll(elements.fSpecies.value);
+    } catch (error) {
+      showMessage(error?.message || "Failed to roll species name", "error");
+    }
+  });
+
+  elements.btnReroll.addEventListener("click", async () => {
+    if (!isPresent(elements.fSubtype.value)) {
+      return;
+    }
+    try {
+      await applySubtypeRoll(elements.fSubtype.value);
+    } catch (error) {
+      showMessage(error?.message || "Failed to reroll subtype fields", "error");
+    }
+  });
+
+  elements.btnRerollName.addEventListener("click", async () => {
+    if (!isPresent(elements.fSpecies.value)) {
+      return;
+    }
+    try {
+      await applySpeciesNameRoll(elements.fSpecies.value);
+    } catch (error) {
+      showMessage(error?.message || "Failed to reroll name", "error");
+    }
+  });
+
+  elements.btnSaveNpc.addEventListener("click", async () => {
+    const payload = readNpcForm();
+    const required = [payload.name, payload.type, payload.subtype, payload.species, payload.faction, payload.trait];
+    if (!required.every((value) => isPresent(value))) {
+      showMessage("Please fill all NPC fields before saving.", "error");
+      return;
+    }
+
+    await mutate(async () => {
+      const saved = await getBackend().SaveNPC(payload);
+      state.selectedNpcId = saved.id || payload.id;
+      return await getBackend().GetSettlement(state.selectedName);
+    }, "NPC updated.");
+    const latest = selectedNpc();
+    if (latest) {
+      setNpcForm(latest);
+    }
+    renderNpcDetails();
+  });
+
+  elements.btnCancelNpcEdit.addEventListener("click", () => {
+    const fallback = state.selectedNpcSnapshot || selectedNpc();
+    if (fallback) {
+      setNpcForm(fallback);
+      renderNpcDetails();
+    } else {
+      clearNpcDetailSelection();
+      renderNpcDetails();
+    }
   });
 }
 

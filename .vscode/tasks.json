@@ -45,13 +45,13 @@
       "problemMatcher": []
     },
     {
-      "label": "Go: Run Wails with dev tag",
+      "label": "Go: Run Wails with production tag",
       "type": "shell",
       "command": "go",
       "args": [
         "run",
         "-tags",
-        "dev",
+        "production",
         "./cmd/settlementgen-wails"
       ],
       "options": {

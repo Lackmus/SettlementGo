@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wails: Run (production tag)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/settlementgen-wails",
+      "cwd": "${workspaceFolder}",
+      "buildFlags": "-tags=production"
+    },
+    {
+      "name": "Wails: Build (production tag)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/settlementgen-wails",
+      "cwd": "${workspaceFolder}",
+      "buildFlags": "-tags=production"
+    }
+  ]
+}

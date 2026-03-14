@@ -1,16 +1,17 @@
 :root {
-  --bg: #efe6d5;
-  --bg-deep: #d4c0a1;
-  --panel: rgba(255, 250, 240, 0.88);
-  --panel-strong: rgba(253, 246, 233, 0.96);
-  --ink: #1f2a1d;
-  --muted: #5e6759;
-  --line: rgba(51, 69, 40, 0.16);
-  --accent: #345c3d;
-  --accent-strong: #203f29;
-  --danger: #9e3b2f;
-  --shadow: 0 16px 48px rgba(53, 42, 21, 0.16);
+  --bg: #0f1722;
+  --bg-deep: #0a0f17;
+  --panel: rgba(20, 28, 41, 0.86);
+  --panel-strong: rgba(24, 35, 51, 0.95);
+  --ink: #e8eef9;
+  --muted: #9fb0cb;
+  --line: rgba(135, 164, 214, 0.2);
+  --accent: #44a6cf;
+  --accent-strong: #2f7ea1;
+  --danger: #ef7a7a;
+  --shadow: 0 18px 56px rgba(0, 0, 0, 0.34);
   --radius: 22px;
+  color-scheme: dark;
 }
 
 * {
@@ -27,9 +28,9 @@ body {
   font-family: "Trebuchet MS", "Gill Sans", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(88, 124, 79, 0.28), transparent 36%),
-    radial-gradient(circle at bottom right, rgba(181, 127, 66, 0.22), transparent 28%),
-    linear-gradient(180deg, #f5ecdd 0%, var(--bg) 52%, #e0cfb5 100%);
+    radial-gradient(circle at top left, rgba(75, 138, 183, 0.26), transparent 36%),
+    radial-gradient(circle at bottom right, rgba(71, 89, 143, 0.28), transparent 34%),
+    linear-gradient(180deg, #101927 0%, var(--bg) 52%, var(--bg-deep) 100%);
 }
 
 .backdrop {
@@ -37,8 +38,8 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(72, 86, 59, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(72, 86, 59, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(109, 145, 210, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 145, 210, 0.05) 1px, transparent 1px);
   background-size: 28px 28px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent);
 }
@@ -69,7 +70,7 @@ body {
   gap: 24px;
   padding: 28px;
   background:
-    linear-gradient(135deg, rgba(255, 252, 246, 0.96), rgba(237, 225, 202, 0.92)),
+    linear-gradient(135deg, rgba(32, 45, 66, 0.95), rgba(24, 34, 50, 0.95)),
     var(--panel);
 }
 
@@ -121,8 +122,8 @@ h3 {
 .detail-grid article {
   padding: 16px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(55, 76, 49, 0.12);
+  background: rgba(13, 20, 31, 0.55);
+  border: 1px solid rgba(109, 148, 208, 0.2);
 }
 
 .hero-stats span {
@@ -190,8 +191,8 @@ textarea {
   width: 100%;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(52, 92, 61, 0.18);
-  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(117, 158, 224, 0.25);
+  background: rgba(10, 16, 25, 0.8);
   color: var(--ink);
   transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
@@ -200,8 +201,8 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: rgba(52, 92, 61, 0.54);
-  box-shadow: 0 0 0 4px rgba(52, 92, 61, 0.12);
+  border-color: rgba(94, 175, 211, 0.8);
+  box-shadow: 0 0 0 4px rgba(67, 157, 205, 0.2);
   transform: translateY(-1px);
 }
 
@@ -214,11 +215,11 @@ button {
   border-radius: 999px;
   padding: 11px 18px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: #f8f4ee;
+  color: #f2f8ff;
   cursor: pointer;
   letter-spacing: 0.03em;
   transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
-  box-shadow: 0 10px 22px rgba(32, 63, 41, 0.22);
+  box-shadow: 0 10px 24px rgba(21, 97, 128, 0.34);
 }
 
 button:hover:not(:disabled) {
@@ -232,9 +233,9 @@ button:disabled {
 }
 
 button.ghost {
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--accent-strong);
-  border: 1px solid rgba(52, 92, 61, 0.16);
+  background: rgba(8, 14, 23, 0.8);
+  color: #b7c9e7;
+  border: 1px solid rgba(100, 142, 201, 0.28);
   box-shadow: none;
 }
 
@@ -255,14 +256,14 @@ button.danger {
 .message {
   padding: 14px 18px;
   border-radius: 16px;
-  border: 1px solid rgba(52, 92, 61, 0.12);
-  background: rgba(255, 252, 247, 0.88);
+  border: 1px solid rgba(104, 145, 206, 0.26);
+  background: rgba(18, 28, 41, 0.88);
   box-shadow: var(--shadow);
 }
 
 .message.error {
-  border-color: rgba(158, 59, 47, 0.24);
-  color: #6d2018;
+  border-color: rgba(239, 122, 122, 0.4);
+  color: #ffbaba;
 }
 
 .settlement-list,
@@ -275,7 +276,7 @@ button.danger {
 .npc-card {
   padding: 16px;
   border-radius: 18px;
-  border: 1px solid rgba(52, 92, 61, 0.12);
+  border: 1px solid rgba(93, 137, 198, 0.2);
   background: var(--panel-strong);
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
@@ -283,12 +284,17 @@ button.danger {
 .settlement-card:hover,
 .npc-card:hover {
   transform: translateY(-1px);
-  border-color: rgba(52, 92, 61, 0.28);
+  border-color: rgba(101, 167, 211, 0.46);
 }
 
 .settlement-card.active {
-  border-color: rgba(52, 92, 61, 0.54);
-  background: rgba(228, 240, 223, 0.92);
+  border-color: rgba(101, 167, 211, 0.66);
+  background: rgba(28, 49, 76, 0.92);
+}
+
+.npc-card.active {
+  border-color: rgba(101, 167, 211, 0.66);
+  background: rgba(20, 40, 65, 0.9);
 }
 
 .settlement-card button.select-card {
@@ -327,8 +333,8 @@ button.danger {
 .pill {
   padding: 7px 10px;
   border-radius: 999px;
-  background: rgba(53, 92, 62, 0.1);
-  color: var(--accent-strong);
+  background: rgba(70, 141, 198, 0.2);
+  color: #b9d6f0;
   font-size: 0.82rem;
 }
 
@@ -347,8 +353,8 @@ button.danger {
 .detail-notes {
   padding: 16px 18px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(52, 92, 61, 0.12);
+  background: rgba(16, 26, 40, 0.6);
+  border: 1px solid rgba(93, 137, 198, 0.2);
 }
 
 .detail-notes p {
@@ -379,10 +385,49 @@ button.danger {
   color: var(--muted);
 }
 
+.npc-details {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(13, 22, 35, 0.86);
+  border: 1px solid rgba(93, 137, 198, 0.25);
+}
+
+.npc-form {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(13, 22, 35, 0.86);
+  border: 1px solid rgba(93, 137, 198, 0.25);
+}
+
+.npc-form label {
+  font-size: 0.86rem;
+}
+
+.detail-row {
+  display: grid;
+  gap: 4px;
+}
+
+.detail-row pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  color: var(--muted);
+}
+
 .npc-card .meta-line {
   margin-top: 10px;
   color: var(--muted);
   line-height: 1.45;
+}
+
+.npc-card h3 {
+  font-size: 1rem;
 }
 
 .npc-card .button-row {
@@ -394,9 +439,9 @@ button.danger {
   place-items: center;
   min-height: 320px;
   text-align: center;
-  border: 1px dashed rgba(52, 92, 61, 0.18);
+  border: 1px dashed rgba(93, 137, 198, 0.24);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.34);
+  background: rgba(11, 20, 32, 0.45);
 }
 
 .hidden {

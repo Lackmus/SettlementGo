@@ -33,6 +33,72 @@
     </section>
 
     <section class="controls-grid">
+      <section id="inspectionPanel" class="panel detail-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Inspection</p>
+            <h2 id="detailTitle">Select a settlement</h2>
+          </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <h3>No settlement selected</h3>
+          <p>Generate one or choose an existing entry to inspect its NPC roster.</p>
+        </div>
+
+        <div id="detailContent" class="hidden stack">
+          <div class="form-grid">
+            <label>
+              Faction
+              <input id="detailFaction" readonly value="-" />
+            </label>
+            <label>
+              Population
+              <input id="detailPopulation" readonly value="0" />
+            </label>
+            <label>
+              NPC Count
+              <input id="detailNpcCount" readonly value="0" />
+            </label>
+          </div>
+
+          <label>
+            Notes
+            <textarea id="detailNotes" class="notes-field" rows="10" cols="50" readonly>-</textarea>
+          </label>
+
+          <div class="button-row compact">
+            <button id="editSettlementButton" type="button" disabled>Edit Settlement</button>
+            <button id="deleteSettlementButton" class="danger ghost" disabled>Delete Settlement</button>
+          </div>
+
+          <form id="settlementEditForm" class="stack hidden">
+            <div class="form-grid">
+              <label>
+                Name
+                <input id="editSettlementName" maxlength="80" required />
+              </label>
+              <label>
+                Faction
+                <select id="editSettlementFaction"></select>
+              </label>
+              <label>
+                Population
+                <input id="editSettlementPopulation" type="number" min="0" />
+              </label>
+            </div>
+            <label>
+              Notes
+              <textarea id="editSettlementNotes" class="notes-field" rows="10" cols="50" maxlength="500"></textarea>
+            </label>
+            <div class="button-row">
+              <button id="saveSettlementButton" type="submit">Save Settlement</button>
+              <button id="cancelSettlementEditButton" type="button" class="ghost">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <form id="randomForm" class="panel stack">
         <div>
           <p class="eyebrow">Quick Generate</p>
@@ -75,7 +141,7 @@
 
         <label>
           Notes
-          <textarea id="settlementNotes" rows="3" placeholder="Watchtower, trade route, old fortifications..."></textarea>
+          <textarea id="settlementNotes" class="notes-field" rows="10" cols="50" maxlength="500" placeholder="Watchtower, trade route, old fortifications..."></textarea>
         </label>
 
         <div class="button-row">
@@ -98,73 +164,20 @@
         <div id="settlementList" class="settlement-list"></div>
       </section>
 
-      <section class="panel detail-panel">
+      <section id="npcPanel" class="panel detail-panel">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Inspection</p>
-            <h2 id="detailTitle">Select a settlement</h2>
-          </div>
-          <div class="button-row compact">
-            <button id="deleteSettlementButton" class="danger ghost" disabled>Delete Settlement</button>
-            <button id="purgeSettlementNpcsButton" class="ghost" disabled>Delete All Settlement NPCs</button>
+            <p class="eyebrow">Roster</p>
+            <h2>NPC Management</h2>
           </div>
         </div>
 
-        <div id="emptyState" class="empty-state">
+        <div id="npcPanelEmptyState" class="empty-state">
           <h3>No settlement selected</h3>
-          <p>Generate one or choose an existing entry to inspect its NPC roster.</p>
+          <p>Select a settlement to manage its NPC roster.</p>
         </div>
 
-        <div id="detailContent" class="hidden stack">
-          <div class="detail-grid">
-            <article>
-              <label>Faction</label>
-              <strong id="detailFaction">-</strong>
-            </article>
-            <article>
-              <label>Population</label>
-              <strong id="detailPopulation">0</strong>
-            </article>
-            <article>
-              <label>NPC Count</label>
-              <strong id="detailNpcCount">0</strong>
-            </article>
-          </div>
-
-          <div class="button-row compact">
-            <button id="editSettlementButton" type="button" disabled>Edit Settlement</button>
-          </div>
-
-          <article class="detail-notes">
-            <label>Notes</label>
-            <p id="detailNotes">-</p>
-          </article>
-
-          <form id="settlementEditForm" class="stack hidden">
-            <div class="form-grid">
-              <label>
-                Name
-                <input id="editSettlementName" maxlength="80" required />
-              </label>
-              <label>
-                Faction
-                <select id="editSettlementFaction"></select>
-              </label>
-              <label>
-                Population
-                <input id="editSettlementPopulation" type="number" min="0" />
-              </label>
-            </div>
-            <label>
-              Notes
-              <textarea id="editSettlementNotes" rows="3"></textarea>
-            </label>
-            <div class="button-row">
-              <button id="saveSettlementButton" type="submit">Save Settlement</button>
-              <button id="cancelSettlementEditButton" type="button" class="ghost">Cancel</button>
-            </div>
-          </form>
-
+        <div id="npcPanelContent" class="hidden stack">
           <section class="npc-actions stack">
             <div class="section-heading inline">
               <div>
@@ -193,6 +206,9 @@
               <div>
                 <p class="eyebrow">Members</p>
                 <h3>NPC Roster</h3>
+              </div>
+              <div class="button-row compact">
+                <button id="purgeSettlementNpcsButton" class="ghost danger" disabled>Delete All NPCs</button>
               </div>
             </div>
 
@@ -249,7 +265,7 @@
                   <div class="detail-row"><strong>Items:</strong> <pre id="f_items">—</pre></div>
                   <label>
                     Notes
-                    <textarea id="f_notes" rows="4"></textarea>
+                    <textarea id="f_notes" class="notes-field" rows="10" cols="50" maxlength="500"></textarea>
                   </label>
                   <div class="button-row">
                     <button type="button" id="btnReroll">Reroll Stats/Items</button>

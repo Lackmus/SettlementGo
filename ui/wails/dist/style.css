@@ -151,12 +151,34 @@ h3 {
 }
 
 .controls-grid {
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: 1.05fr 1.2fr 0.75fr;
 }
 
 .workspace-grid {
-  grid-template-columns: 0.86fr 1.14fr;
+  grid-template-columns: 0.82fr 1.18fr;
   align-items: start;
+}
+
+#randomForm {
+  order: 3;
+  max-width: 440px;
+  justify-self: end;
+}
+
+#customForm {
+  order: 2;
+}
+
+#inspectionPanel {
+  order: 1;
+}
+
+.workspace-grid .detail-panel {
+  order: initial;
+}
+
+.workspace-grid .list-panel {
+  order: initial;
 }
 
 form.panel,
@@ -208,6 +230,13 @@ textarea:focus {
 
 textarea {
   resize: vertical;
+}
+
+.notes-field {
+  width: min(100%, 50ch);
+  min-height: 12em;
+  max-height: 12em;
+  resize: none;
 }
 
 button {
@@ -320,7 +349,7 @@ button.danger {
 }
 
 .section-heading.inline {
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .pill-row {
@@ -472,7 +501,8 @@ button.danger {
 }
 
 .npc-card .button-row {
-  margin-top: 14px;
+  margin: 0 0 10px;
+  justify-content: flex-end;
 }
 
 .empty-state {
@@ -494,6 +524,16 @@ button.danger {
   .workspace-grid,
   .hero {
     grid-template-columns: 1fr;
+  }
+
+  #randomForm,
+  #inspectionPanel,
+  #customForm,
+  .workspace-grid .detail-panel,
+  .workspace-grid .list-panel {
+    order: initial;
+    max-width: none;
+    justify-self: stretch;
   }
 
   .detail-grid,

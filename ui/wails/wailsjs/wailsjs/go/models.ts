@@ -100,6 +100,26 @@ export namespace mapper {
 	        this.initialRandomNpcCount = source["initialRandomNpcCount"];
 	    }
 	}
+	export class SettlementUpdateInput {
+	    originalName: string;
+	    name: string;
+	    faction: string;
+	    population: number;
+	    notes: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SettlementUpdateInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.originalName = source["originalName"];
+	        this.name = source["name"];
+	        this.faction = source["faction"];
+	        this.population = source["population"];
+	        this.notes = source["notes"];
+	    }
+	}
 	export class SettlementView {
 	    name: string;
 	    faction: string;

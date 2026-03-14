@@ -162,6 +162,52 @@ func (a *WailsAPI) CreateSettlement(input appmapper.SettlementCreateInput) (appm
 	return a.toSettlementView(appmapper.ToSettlementInput(created)), nil
 }
 
+func (a *WailsAPI) UpdateSettlement(input appmapper.SettlementUpdateInput) (appmapper.SettlementView, error) {
+	originalName := strings.TrimSpace(input.OriginalName)
+	if originalName == "" {
+		return appmapper.SettlementView{}, fmt.Errorf("original settlement name is required")
+	}
+
+	current, err := a.app.SettlementController.GetSettlement(originalName)
+	if err != nil {
+		return appmapper.SettlementView{}, err
+	}
+
+	updated := current
+	if name := strings.TrimSpace(input.Name); name != "" {
+		updated.Name = name
+	}
+	if faction := strings.TrimSpace(input.Faction); faction != "" {
+		updated.Faction = faction
+	}
+	updated.Population = input.Population
+	updated.Notes = strings.TrimSpace(input.Notes)
+
+	if updated.Name == originalName {
+		if err := a.app.SettlementController.UpdateSettlement(updated); err != nil {
+			return appmapper.SettlementView{}, err
+		}
+		return a.GetSettlement(updated.Name)
+	}
+
+	if a.app.SettlementController.SettlementExists(updated.Name) {
+		return appmapper.SettlementView{}, fmt.Errorf("settlement with name %q already exists", updated.Name)
+	}
+
+	if err := a.app.SettlementController.RemoveSettlement(originalName); err != nil {
+		return appmapper.SettlementView{}, err
+	}
+
+	if _, err := a.app.SettlementController.AddSettlement(updated); err != nil {
+		if _, rollbackErr := a.app.SettlementController.AddSettlement(current); rollbackErr != nil {
+			return appmapper.SettlementView{}, fmt.Errorf("update failed: %v; rollback failed: %v", err, rollbackErr)
+		}
+		return appmapper.SettlementView{}, err
+	}
+
+	return a.GetSettlement(updated.Name)
+}
+
 func (a *WailsAPI) CreateRandomSettlement() (appmapper.SettlementView, error) {
 	settlement, err := a.app.SettlementController.CreateRandomSettlement()
 	if err != nil {

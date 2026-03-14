@@ -30,6 +30,14 @@ type SettlementCreateInput struct {
 	InitialRandomNPCCount int    `json:"initialRandomNpcCount"`
 }
 
+type SettlementUpdateInput struct {
+	OriginalName string `json:"originalName"`
+	Name         string `json:"name"`
+	Faction      string `json:"faction"`
+	Population   int    `json:"population"`
+	Notes        string `json:"notes"`
+}
+
 type SettlementView struct {
 	Name       string               `json:"name"`
 	Faction    string               `json:"faction"`

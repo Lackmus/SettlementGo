@@ -69,3 +69,7 @@ export function RollSubtypeFields(arg1) {
 export function SaveNPC(arg1) {
   return window['go']['main']['WailsAPI']['SaveNPC'](arg1);
 }
+
+export function UpdateSettlement(arg1) {
+  return window['go']['main']['WailsAPI']['UpdateSettlement'](arg1);
+}

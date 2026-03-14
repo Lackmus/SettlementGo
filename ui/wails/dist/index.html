@@ -129,12 +129,43 @@
               <label>NPC Count</label>
               <strong id="detailNpcCount">0</strong>
             </article>
+            <article>
+              <label>Actions</label>
+              <div class="button-row compact">
+                <button id="editSettlementButton" type="button" class="ghost" disabled>Edit Settlement</button>
+              </div>
+            </article>
           </div>
 
           <article class="detail-notes">
             <label>Notes</label>
             <p id="detailNotes">-</p>
           </article>
+
+          <form id="settlementEditForm" class="stack hidden">
+            <div class="form-grid">
+              <label>
+                Name
+                <input id="editSettlementName" maxlength="80" required />
+              </label>
+              <label>
+                Faction
+                <select id="editSettlementFaction"></select>
+              </label>
+              <label>
+                Population
+                <input id="editSettlementPopulation" type="number" min="0" />
+              </label>
+            </div>
+            <label>
+              Notes
+              <textarea id="editSettlementNotes" rows="3"></textarea>
+            </label>
+            <div class="button-row">
+              <button id="saveSettlementButton" type="submit">Save Settlement</button>
+              <button id="cancelSettlementEditButton" type="button" class="ghost">Cancel</button>
+            </div>
+          </form>
 
           <section class="npc-actions stack">
             <div class="section-heading inline">
@@ -167,65 +198,69 @@
               </div>
             </div>
 
-            <div id="npcDetails" class="npc-details hidden">
-              <div class="detail-row"><strong>Name:</strong> <span id="d_name">—</span></div>
-              <div class="detail-row"><strong>Type:</strong> <span id="d_type">—</span></div>
-              <div class="detail-row"><strong>Subtype:</strong> <span id="d_subtype">—</span></div>
-              <div class="detail-row"><strong>Species:</strong> <span id="d_species">—</span></div>
-              <div class="detail-row"><strong>Faction:</strong> <span id="d_faction">—</span></div>
-              <div class="detail-row"><strong>Trait:</strong> <span id="d_traits">—</span></div>
-              <div class="detail-row"><strong>Stats:</strong> <pre id="d_stats">—</pre></div>
-              <div class="detail-row"><strong>Items:</strong> <pre id="d_items">—</pre></div>
-              <div class="detail-row"><strong>Notes:</strong> <pre id="d_notes">—</pre></div>
-              <div class="button-row">
-                <button type="button" id="btnEditNpcDetail">Edit</button>
-                <button type="button" id="btnCloseNpcDetail" class="ghost">Close</button>
-              </div>
+            <div class="npc-roster-layout">
+              <div id="npcList" class="npc-list"></div>
+
+              <aside class="npc-sidepanel">
+                <div id="npcDetails" class="npc-details hidden">
+                  <div class="detail-row"><strong>Name:</strong> <span id="d_name">—</span></div>
+                  <div class="detail-row"><strong>Type:</strong> <span id="d_type">—</span></div>
+                  <div class="detail-row"><strong>Subtype:</strong> <span id="d_subtype">—</span></div>
+                  <div class="detail-row"><strong>Species:</strong> <span id="d_species">—</span></div>
+                  <div class="detail-row"><strong>Faction:</strong> <span id="d_faction">—</span></div>
+                  <div class="detail-row"><strong>Trait:</strong> <span id="d_traits">—</span></div>
+                  <div class="detail-row"><strong>Stats:</strong> <pre id="d_stats">—</pre></div>
+                  <div class="detail-row"><strong>Items:</strong> <pre id="d_items">—</pre></div>
+                  <div class="detail-row"><strong>Notes:</strong> <pre id="d_notes">—</pre></div>
+                  <div class="button-row">
+                    <button type="button" id="btnEditNpcDetail">Edit</button>
+                    <button type="button" id="btnCloseNpcDetail" class="ghost">Close</button>
+                  </div>
+                </div>
+
+                <form id="npcForm" class="npc-form hidden">
+                  <input type="hidden" id="f_id" value="" />
+                  <div class="name-row">
+                    <label>
+                      Name
+                      <input id="f_name" />
+                    </label>
+                    <button type="button" id="btnRerollName">Reroll Name</button>
+                  </div>
+                  <label>
+                    Type
+                    <select id="f_type"></select>
+                  </label>
+                  <label>
+                    Subtype
+                    <select id="f_subtype"></select>
+                  </label>
+                  <label>
+                    Species
+                    <select id="f_species"></select>
+                  </label>
+                  <label>
+                    Faction
+                    <select id="f_faction"></select>
+                  </label>
+                  <label>
+                    Trait
+                    <select id="f_traits"></select>
+                  </label>
+                  <div class="detail-row"><strong>Stats:</strong> <pre id="f_stats">—</pre></div>
+                  <div class="detail-row"><strong>Items:</strong> <pre id="f_items">—</pre></div>
+                  <label>
+                    Notes
+                    <textarea id="f_notes" rows="4"></textarea>
+                  </label>
+                  <div class="button-row">
+                    <button type="button" id="btnReroll">Reroll Stats/Items</button>
+                    <button type="button" id="btnSaveNpc">Save</button>
+                    <button type="button" id="btnCancelNpcEdit" class="ghost">Cancel</button>
+                  </div>
+                </form>
+              </aside>
             </div>
-
-            <form id="npcForm" class="npc-form hidden">
-              <input type="hidden" id="f_id" value="" />
-              <div class="name-row">
-                <label>
-                  Name
-                  <input id="f_name" />
-                </label>
-                <button type="button" id="btnRerollName">Reroll Name</button>
-              </div>
-              <label>
-                Type
-                <select id="f_type"></select>
-              </label>
-              <label>
-                Subtype
-                <select id="f_subtype"></select>
-              </label>
-              <label>
-                Species
-                <select id="f_species"></select>
-              </label>
-              <label>
-                Faction
-                <select id="f_faction"></select>
-              </label>
-              <label>
-                Trait
-                <select id="f_traits"></select>
-              </label>
-              <div class="detail-row"><strong>Stats:</strong> <pre id="f_stats">—</pre></div>
-              <div class="detail-row"><strong>Items:</strong> <pre id="f_items">—</pre></div>
-              <label>
-                Notes
-                <textarea id="f_notes" rows="4"></textarea>
-              </label>
-              <div class="button-row">
-                <button type="button" id="btnReroll">Reroll Stats/Items</button>
-                <button type="button" id="btnSaveNpc">Save</button>
-                <button type="button" id="btnCancelNpcEdit" class="ghost">Cancel</button>
-              </div>
-            </form>
-
-            <div id="npcList" class="npc-list"></div>
           </section>
         </div>
       </section>

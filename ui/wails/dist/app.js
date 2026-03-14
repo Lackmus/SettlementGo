@@ -11,6 +11,7 @@ function getBackend() {
 const state = {
   settlements: [],
   selectedName: "",
+  editingSettlement: false,
   selectedNpcId: "",
   selectedNpcSnapshot: null,
   creationOptions: {
@@ -38,6 +39,13 @@ const elements = {
   detailPopulation: document.querySelector("#detailPopulation"),
   detailNpcCount: document.querySelector("#detailNpcCount"),
   detailNotes: document.querySelector("#detailNotes"),
+  editSettlementButton: document.querySelector("#editSettlementButton"),
+  settlementEditForm: document.querySelector("#settlementEditForm"),
+  editSettlementName: document.querySelector("#editSettlementName"),
+  editSettlementFaction: document.querySelector("#editSettlementFaction"),
+  editSettlementPopulation: document.querySelector("#editSettlementPopulation"),
+  editSettlementNotes: document.querySelector("#editSettlementNotes"),
+  cancelSettlementEditButton: document.querySelector("#cancelSettlementEditButton"),
   deleteSettlementButton: document.querySelector("#deleteSettlementButton"),
   purgeSettlementNpcsButton: document.querySelector("#purgeSettlementNpcsButton"),
   addRandomNpcButton: document.querySelector("#addRandomNpcButton"),
@@ -76,6 +84,27 @@ const elements = {
   dItems: document.querySelector("#d_items"),
   dNotes: document.querySelector("#d_notes"),
 };
+
+function setSettlementEditMode(enabled) {
+  state.editingSettlement = enabled;
+  elements.settlementEditForm.classList.toggle("hidden", !enabled);
+  elements.editSettlementButton.classList.toggle("hidden", enabled);
+}
+
+function populateSettlementEditForm(settlement) {
+  if (!settlement) {
+    elements.editSettlementName.value = "";
+    elements.editSettlementFaction.value = "";
+    elements.editSettlementPopulation.value = "0";
+    elements.editSettlementNotes.value = "";
+    return;
+  }
+
+  elements.editSettlementName.value = settlement.name || "";
+  setSelectValue(elements.editSettlementFaction, settlement.faction || "");
+  elements.editSettlementPopulation.value = String(settlement.population ?? 0);
+  elements.editSettlementNotes.value = settlement.notes || "";
+}
 
 function selectedNpc() {
   const settlement = selectedSettlement();
@@ -381,9 +410,12 @@ function renderDetailPane() {
   elements.deleteSettlementButton.disabled = !hasSelection;
   elements.purgeSettlementNpcsButton.disabled = !hasSelection;
   elements.addRandomNpcButton.disabled = !hasSelection;
+  elements.editSettlementButton.disabled = !hasSelection;
   elements.specificNpcForm.querySelector("button").disabled = !hasSelection;
 
   if (!settlement) {
+    setSettlementEditMode(false);
+    populateSettlementEditForm(null);
     elements.detailTitle.textContent = "Select a settlement";
     elements.npcList.innerHTML = "";
     elements.npcDetails.classList.add("hidden");
@@ -396,6 +428,7 @@ function renderDetailPane() {
   elements.detailPopulation.textContent = String(settlement.population ?? 0);
   elements.detailNpcCount.textContent = String(settlement.npcs.length);
   elements.detailNotes.textContent = settlement.notes || "No notes recorded.";
+  populateSettlementEditForm(settlement);
 
   elements.npcList.innerHTML = "";
   if (settlement.npcs.length === 0) {
@@ -469,6 +502,7 @@ function renderDetailPane() {
 async function loadCreationOptions() {
   state.creationOptions = await getBackend().GetCreationOptions();
   populateSelect(elements.settlementFaction, state.creationOptions.factions, "Choose a faction");
+  populateSelect(elements.editSettlementFaction, state.creationOptions.factions, "Choose a faction");
   populateSelect(elements.npcFactionSelect, state.creationOptions.factions, "Match settlement faction");
   populateSelect(elements.npcTypeSelect, state.creationOptions.npcTypes, "Choose an NPC type");
   setSelectOptions(elements.fType, state.creationOptions.npcTypes, true);
@@ -563,6 +597,7 @@ function bindEvents() {
     };
 
     await mutate(async () => getBackend().CreateSettlement(payload), `Settlement ${payload.name} created.`);
+    setSettlementEditMode(false);
     elements.customForm.reset();
     if (state.creationOptions.factions[0]) {
       elements.settlementFaction.value = state.creationOptions.factions[0];
@@ -572,7 +607,54 @@ function bindEvents() {
 
   elements.refreshButton.addEventListener("click", async () => {
     showMessage("");
+    setSettlementEditMode(false);
     await syncUI();
+  });
+
+  elements.editSettlementButton.addEventListener("click", () => {
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+    populateSettlementEditForm(settlement);
+    setSettlementEditMode(true);
+  });
+
+  elements.cancelSettlementEditButton.addEventListener("click", () => {
+    populateSettlementEditForm(selectedSettlement());
+    setSettlementEditMode(false);
+  });
+
+  elements.settlementEditForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+
+    const payload = {
+      originalName: settlement.name,
+      name: elements.editSettlementName.value.trim(),
+      faction: elements.editSettlementFaction.value.trim(),
+      population: Number(elements.editSettlementPopulation.value || 0),
+      notes: elements.editSettlementNotes.value.trim(),
+    };
+
+    if (!isPresent(payload.name)) {
+      window.alert("Settlement name cannot be empty.");
+      return;
+    }
+    if (!isPresent(payload.faction)) {
+      window.alert("Faction cannot be empty.");
+      return;
+    }
+    if (payload.population < 0) {
+      window.alert("Population cannot be negative.");
+      return;
+    }
+
+    await mutate(async () => getBackend().UpdateSettlement(payload), `Settlement ${payload.name} updated.`);
+    setSettlementEditMode(false);
   });
 
   elements.clearAllButton.addEventListener("click", async () => {
@@ -583,6 +665,7 @@ function bindEvents() {
     await mutate(async () => {
       await getBackend().DeleteAllSettlements();
       state.selectedName = "";
+      setSettlementEditMode(false);
       clearNpcDetailSelection();
       return null;
     }, "All settlements removed.");
@@ -600,6 +683,7 @@ function bindEvents() {
     await mutate(async () => {
       await getBackend().DeleteSettlement(settlement.name);
       state.selectedName = "";
+      setSettlementEditMode(false);
       clearNpcDetailSelection();
       return null;
     }, `${settlement.name} deleted.`);

@@ -137,3 +137,66 @@ func TestWailsAPI_AddAndDeleteNPCFromSettlement(t *testing.T) {
 		t.Fatalf("expected notes to remain unchanged, got %q", updated.Notes)
 	}
 }
+
+func TestWailsAPI_UpdateSettlement_WithoutCoords(t *testing.T) {
+	api := newWailsAPIForTests(t)
+
+	options := api.GetCreationOptions()
+	if len(options.Factions) < 2 {
+		t.Fatal("expected at least two factions for update test")
+	}
+
+	created, err := api.CreateSettlement(appmapper.SettlementCreateInput{
+		Name:       "Mossfield",
+		Faction:    options.Factions[0],
+		XCoord:     111,
+		YCoord:     222,
+		Population: 320,
+		Notes:      "Old roads and farms",
+	})
+	if err != nil {
+		t.Fatalf("expected settlement creation to succeed, got: %v", err)
+	}
+
+	withNPC, err := api.AddRandomNPCToSettlement(created.Name)
+	if err != nil {
+		t.Fatalf("expected random npc addition to succeed, got: %v", err)
+	}
+	if len(withNPC.NPCs) != 1 {
+		t.Fatalf("expected 1 NPC after add, got %d", len(withNPC.NPCs))
+	}
+
+	updated, err := api.UpdateSettlement(appmapper.SettlementUpdateInput{
+		OriginalName: created.Name,
+		Name:         "Mossfield Prime",
+		Faction:      options.Factions[1],
+		Population:   415,
+		Notes:        "Expanded trade quarter",
+	})
+	if err != nil {
+		t.Fatalf("expected settlement update to succeed, got: %v", err)
+	}
+
+	if updated.Name != "Mossfield Prime" {
+		t.Fatalf("expected renamed settlement, got %q", updated.Name)
+	}
+	if updated.Faction != options.Factions[1] {
+		t.Fatalf("expected faction %q, got %q", options.Factions[1], updated.Faction)
+	}
+	if updated.Population != 415 {
+		t.Fatalf("expected population 415, got %d", updated.Population)
+	}
+	if updated.Notes != "Expanded trade quarter" {
+		t.Fatalf("expected updated notes, got %q", updated.Notes)
+	}
+	if updated.XCoord != 111 || updated.YCoord != 222 {
+		t.Fatalf("expected coordinates unchanged, got (%d, %d)", updated.XCoord, updated.YCoord)
+	}
+	if len(updated.NPCs) != 1 {
+		t.Fatalf("expected npc links preserved, got %d npcs", len(updated.NPCs))
+	}
+
+	if _, err := api.GetSettlement(created.Name); err == nil {
+		t.Fatal("expected old settlement name to be unavailable after rename")
+	}
+}

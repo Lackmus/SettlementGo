@@ -2,6 +2,10 @@
 
 Desktop settlement generator with NPC integration via npcgengo.
 
+## NPC Panel Parity
+
+Use NPC_PANEL_PARITY_CHECKLIST.md when changing the settlement NPC panel to keep behavior and microcopy aligned with NPCGen.
+
 ## Run And Build (Wails UI)
 
 ### Recommended (Wails CLI)

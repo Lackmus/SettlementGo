@@ -37,3 +37,5 @@ export function RollSpeciesName(arg1:string):Promise<string>;
 export function RollSubtypeFields(arg1:string):Promise<main.SubtypeRoll>;
 
 export function SaveNPC(arg1:mapper.NPCInput):Promise<mapper.NPCInput>;
+
+export function UpdateSettlement(arg1:mapper.SettlementUpdateInput):Promise<mapper.SettlementView>;

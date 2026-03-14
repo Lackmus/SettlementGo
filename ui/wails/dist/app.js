@@ -424,7 +424,7 @@ function renderDetailPane() {
       </div>
       <p class="meta-line"><strong>Faction:</strong> ${npc.faction || "-"}</p>
       <div class="button-row">
-        <button type="button" class="ghost danger">Delete NPC Record</button>
+        <button type="button" class="ghost danger">Delete</button>
       </div>
     `;
 
@@ -668,7 +668,7 @@ function bindEvents() {
     try {
       await applySubtypeRoll(elements.fSubtype.value);
     } catch (error) {
-      window.alert(error?.message || "Failed to roll subtype fields.");
+      window.alert(error?.message || "Failed to generate subtype fields.");
     }
   });
 
@@ -677,7 +677,7 @@ function bindEvents() {
     try {
       await applySpeciesNameRoll(elements.fSpecies.value);
     } catch (error) {
-      window.alert(error?.message || "Failed to roll species name.");
+      window.alert(error?.message || "Failed to generate species name.");
     }
   });
 
@@ -713,7 +713,7 @@ function bindEvents() {
       return;
     }
     if (!isPresent(payload.id)) {
-      window.alert("No ID present. Select an NPC first.");
+      window.alert("No ID present. Generate an NPC first.");
       return;
     }
 

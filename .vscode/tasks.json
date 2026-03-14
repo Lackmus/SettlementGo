@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Wails: Dev (SettlementGen)",
+      "type": "shell",
+      "command": "wails",
+      "args": [
+        "dev"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/cmd/settlementgen-wails"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Wails: Build (SettlementGen)",
+      "type": "shell",
+      "command": "wails",
+      "args": [
+        "build",
+        "-clean"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/cmd/settlementgen-wails"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Go: Build Wails with production tag",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "production",
+        "./cmd/settlementgen-wails"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Go: Run Wails with dev tag",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "run",
+        "-tags",
+        "dev",
+        "./cmd/settlementgen-wails"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

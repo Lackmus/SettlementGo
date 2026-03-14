@@ -104,6 +104,16 @@ func (s *SettlementNPCProvider) validateProviderInput(settlement *model.Settleme
 	return nil
 }
 
+func (s *SettlementNPCProvider) GetCreationOptions() (CreationOptions, error) {
+	if s == nil {
+		return CreationOptions{}, fmt.Errorf("settlement npc provider is not initialized")
+	}
+	if s.gateway == nil {
+		return CreationOptions{}, fmt.Errorf("npc generator is not configured")
+	}
+	return s.gateway.GetCreationOptions(), nil
+}
+
 func (s *SettlementNPCProvider) GenerateSingleNPCForSettlement(settlement *model.Settlement, npctype string, faction string) (model.Settlement, error) {
 	if err := s.validateProviderInput(settlement); err != nil {
 		return model.Settlement{}, err

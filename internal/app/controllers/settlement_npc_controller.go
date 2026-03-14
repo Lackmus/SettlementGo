@@ -7,6 +7,13 @@ import (
 	"github.com/lackmus/settlementgengo/pkg/model"
 )
 
+func (c *SettlementListController) GetCreationOptions() (CreationOptions, error) {
+	if c.settlementNPCProvider == nil {
+		return CreationOptions{}, fmt.Errorf("npc generator is not configured")
+	}
+	return c.settlementNPCProvider.GetCreationOptions()
+}
+
 // NPC management methods are split into a dedicated file to keep
 // settlement_list_controller.go focused on generic settlement operations.
 func (c *SettlementListController) AddNPCToSettlement(settlementName string, npctype string, faction string) (model.Settlement, error) {

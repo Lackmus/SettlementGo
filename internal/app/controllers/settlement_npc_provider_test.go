@@ -12,6 +12,7 @@ type mockNPCGateway struct {
 	createNPCIDFn       func(npctype string, faction string) (string, error)
 	createRandomNPCIDFn func() (string, error)
 	deleteNPCByIDFn     func(id string) error
+	getCreationOptions  func() CreationOptions
 }
 
 func (m *mockNPCGateway) CreateNPCAndID(npctype string, faction string) (string, error) {
@@ -33,6 +34,13 @@ func (m *mockNPCGateway) DeleteNPC(id string) error {
 		return nil
 	}
 	return m.deleteNPCByIDFn(id)
+}
+
+func (m *mockNPCGateway) GetCreationOptions() CreationOptions {
+	if m.getCreationOptions == nil {
+		return CreationOptions{}
+	}
+	return m.getCreationOptions()
 }
 
 func TestSettlementNPCProvider_GenerateRandomNPCsForSettlement_ValidatesInit(t *testing.T) {

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SettlementGen Desktop</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="backdrop"></div>
+  <main class="app-shell">
+    <section class="hero panel">
+      <div>
+        <p class="eyebrow">Wails Desktop</p>
+        <h1>SettlementGen</h1>
+        <p class="lede">Generate settlements, attach NPCs from the existing NPCGen behavior, and inspect everything in one desktop view.</p>
+      </div>
+
+      <div class="hero-stats">
+        <article>
+          <span id="statSettlements">0</span>
+          <label>Settlements</label>
+        </article>
+        <article>
+          <span id="statNpcs">0</span>
+          <label>Total NPCs</label>
+        </article>
+        <article>
+          <span id="statFaction">-</span>
+          <label>Focus Faction</label>
+        </article>
+      </div>
+    </section>
+
+    <section class="controls-grid">
+      <form id="randomForm" class="panel stack">
+        <div>
+          <p class="eyebrow">Quick Generate</p>
+          <h2>Random Settlement</h2>
+        </div>
+        <label>
+          Random NPC count
+          <input id="randomNpcCount" type="number" min="0" max="12" value="2" />
+        </label>
+        <div class="button-row">
+          <button type="submit">Generate</button>
+          <button type="button" id="refreshButton" class="ghost">Refresh</button>
+        </div>
+      </form>
+
+      <form id="customForm" class="panel stack">
+        <div>
+          <p class="eyebrow">Custom Settlement</p>
+          <h2>Create With Details</h2>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Name
+            <input id="settlementName" required maxlength="80" placeholder="Iron Hollow" />
+          </label>
+          <label>
+            Faction
+            <select id="settlementFaction"></select>
+          </label>
+          <label>
+            Population
+            <input id="settlementPopulation" type="number" min="1" value="180" />
+          </label>
+          <label>
+            Initial random NPCs
+            <input id="settlementNpcCount" type="number" min="0" max="12" value="0" />
+          </label>
+          <label>
+            X Coordinate
+            <input id="settlementX" type="number" value="0" />
+          </label>
+          <label>
+            Y Coordinate
+            <input id="settlementY" type="number" value="0" />
+          </label>
+        </div>
+
+        <label>
+          Notes
+          <textarea id="settlementNotes" rows="3" placeholder="Watchtower, trade route, old fortifications..."></textarea>
+        </label>
+
+        <div class="button-row">
+          <button type="submit">Create Settlement</button>
+          <button type="button" id="clearAllButton" class="danger ghost">Delete All Settlements</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="message" class="message hidden" role="status" aria-live="polite"></section>
+
+    <section class="workspace-grid">
+      <section class="panel list-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Registry</p>
+            <h2>Settlements</h2>
+          </div>
+        </div>
+        <div id="settlementList" class="settlement-list"></div>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Inspection</p>
+            <h2 id="detailTitle">Select a settlement</h2>
+          </div>
+          <div class="button-row compact">
+            <button id="deleteSettlementButton" class="danger ghost" disabled>Delete Settlement</button>
+            <button id="purgeSettlementNpcsButton" class="ghost" disabled>Delete All Settlement NPCs</button>
+          </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+          <h3>No settlement selected</h3>
+          <p>Generate one or choose an existing entry to inspect its NPC roster.</p>
+        </div>
+
+        <div id="detailContent" class="hidden stack">
+          <div class="detail-grid">
+            <article>
+              <label>Faction</label>
+              <strong id="detailFaction">-</strong>
+            </article>
+            <article>
+              <label>Population</label>
+              <strong id="detailPopulation">0</strong>
+            </article>
+            <article>
+              <label>Coordinates</label>
+              <strong id="detailCoords">0, 0</strong>
+            </article>
+            <article>
+              <label>NPC Count</label>
+              <strong id="detailNpcCount">0</strong>
+            </article>
+          </div>
+
+          <article class="detail-notes">
+            <label>Notes</label>
+            <p id="detailNotes">-</p>
+          </article>
+
+          <section class="npc-actions stack">
+            <div class="section-heading inline">
+              <div>
+                <p class="eyebrow">Roster</p>
+                <h3>NPC Operations</h3>
+              </div>
+            </div>
+            <div class="button-row">
+              <button id="addRandomNpcButton">Add Random NPC</button>
+            </div>
+            <form id="specificNpcForm" class="inline-form">
+              <label>
+                NPC Type
+                <select id="npcTypeSelect"></select>
+              </label>
+              <label>
+                Faction
+                <select id="npcFactionSelect"></select>
+              </label>
+              <button type="submit">Add Specific NPC</button>
+            </form>
+          </section>
+
+          <section class="npc-roster stack">
+            <div class="section-heading inline">
+              <div>
+                <p class="eyebrow">Members</p>
+                <h3>NPC Roster</h3>
+              </div>
+            </div>
+            <div id="npcList" class="npc-list"></div>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

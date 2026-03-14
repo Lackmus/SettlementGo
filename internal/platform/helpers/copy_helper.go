@@ -24,3 +24,16 @@ func DeepCopyMap[K comparable, V any](src map[K]V) map[K]V {
 	}
 	return dst
 }
+
+func CopyStringSliceMap(source map[string][]string) map[string][]string {
+	if len(source) == 0 {
+		return map[string][]string{}
+	}
+
+	result := make(map[string][]string, len(source))
+	for key, values := range source {
+		result[key] = append([]string(nil), values...)
+	}
+
+	return result
+}

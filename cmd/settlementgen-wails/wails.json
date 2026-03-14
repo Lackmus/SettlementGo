@@ -1,0 +1,10 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "SettlementGen",
+  "outputfilename": "settlementgen-wails",
+  "frontend:dir": "../../ui/wails",
+  "assetdir": "../../ui/wails/dist",
+  "wailsjsdir": "../../ui/wails/wailsjs",
+  "frontend:install": "",
+  "frontend:build": ""
+}

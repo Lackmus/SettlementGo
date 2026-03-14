@@ -1,0 +1,387 @@
+function getBackend() {
+  const api = window?.go?.main?.WailsAPI;
+  if (!api) {
+    throw new Error("Wails bindings are unavailable. Start the app with Wails to use the desktop UI.");
+  }
+  return api;
+}
+
+const state = {
+  settlements: [],
+  selectedName: "",
+  creationOptions: {
+    factions: [],
+    npcTypes: [],
+    npcSubtypeForTypeMap: {},
+    npcSpeciesForFactionMap: {},
+    species: [],
+    traits: [],
+  },
+};
+
+const elements = {
+  customForm: document.querySelector("#customForm"),
+  randomForm: document.querySelector("#randomForm"),
+  refreshButton: document.querySelector("#refreshButton"),
+  clearAllButton: document.querySelector("#clearAllButton"),
+  settlementList: document.querySelector("#settlementList"),
+  npcList: document.querySelector("#npcList"),
+  message: document.querySelector("#message"),
+  emptyState: document.querySelector("#emptyState"),
+  detailContent: document.querySelector("#detailContent"),
+  detailTitle: document.querySelector("#detailTitle"),
+  detailFaction: document.querySelector("#detailFaction"),
+  detailPopulation: document.querySelector("#detailPopulation"),
+  detailCoords: document.querySelector("#detailCoords"),
+  detailNpcCount: document.querySelector("#detailNpcCount"),
+  detailNotes: document.querySelector("#detailNotes"),
+  deleteSettlementButton: document.querySelector("#deleteSettlementButton"),
+  purgeSettlementNpcsButton: document.querySelector("#purgeSettlementNpcsButton"),
+  addRandomNpcButton: document.querySelector("#addRandomNpcButton"),
+  specificNpcForm: document.querySelector("#specificNpcForm"),
+  settlementFaction: document.querySelector("#settlementFaction"),
+  npcFactionSelect: document.querySelector("#npcFactionSelect"),
+  npcTypeSelect: document.querySelector("#npcTypeSelect"),
+  statSettlements: document.querySelector("#statSettlements"),
+  statNpcs: document.querySelector("#statNpcs"),
+  statFaction: document.querySelector("#statFaction"),
+};
+
+function selectedSettlement() {
+  return state.settlements.find((settlement) => settlement.name === state.selectedName) || null;
+}
+
+function showMessage(text, type = "info") {
+  if (!text) {
+    elements.message.classList.add("hidden");
+    elements.message.textContent = "";
+    elements.message.classList.remove("error");
+    return;
+  }
+
+  elements.message.textContent = text;
+  elements.message.classList.remove("hidden");
+  elements.message.classList.toggle("error", type === "error");
+}
+
+function populateSelect(select, values, placeholder) {
+  const normalized = Array.from(new Set(values.filter(Boolean))).sort((left, right) => left.localeCompare(right));
+  select.innerHTML = "";
+
+  if (placeholder) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = placeholder;
+    select.append(option);
+  }
+
+  normalized.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.append(option);
+  });
+
+  if (!placeholder && normalized.length > 0) {
+    select.value = normalized[0];
+  }
+}
+
+function renderStats() {
+  const totalNpcCount = state.settlements.reduce((count, settlement) => count + settlement.npcs.length, 0);
+  const selected = selectedSettlement();
+
+  elements.statSettlements.textContent = String(state.settlements.length);
+  elements.statNpcs.textContent = String(totalNpcCount);
+  elements.statFaction.textContent = selected?.faction || state.settlements[0]?.faction || "-";
+}
+
+function renderSettlementList() {
+  elements.settlementList.innerHTML = "";
+
+  if (state.settlements.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.innerHTML = "<div><h3>No settlements yet</h3><p>Generate one to populate the registry.</p></div>";
+    elements.settlementList.append(empty);
+    return;
+  }
+
+  state.settlements.forEach((settlement) => {
+    const card = document.createElement("article");
+    card.className = "settlement-card";
+    if (settlement.name === state.selectedName) {
+      card.classList.add("active");
+    }
+
+    const faction = settlement.faction || "Unknown faction";
+    const notes = settlement.notes || "No notes recorded.";
+
+    card.innerHTML = `
+      <button type="button" class="select-card">
+        <div class="card-header">
+          <div>
+            <h3>${settlement.name}</h3>
+            <p class="eyebrow">${faction}</p>
+          </div>
+          <strong>${settlement.npcs.length} NPCs</strong>
+        </div>
+        <div class="pill-row">
+          <span class="pill">Population ${settlement.population}</span>
+          <span class="pill">Coords ${settlement.xCoord}, ${settlement.yCoord}</span>
+        </div>
+        <p class="meta-line">${notes}</p>
+      </button>
+    `;
+
+    card.querySelector("button").addEventListener("click", async () => {
+      state.selectedName = settlement.name;
+      await refreshSelection();
+    });
+
+    elements.settlementList.append(card);
+  });
+}
+
+function renderDetailPane() {
+  const settlement = selectedSettlement();
+  const hasSelection = Boolean(settlement);
+
+  elements.emptyState.classList.toggle("hidden", hasSelection);
+  elements.detailContent.classList.toggle("hidden", !hasSelection);
+  elements.deleteSettlementButton.disabled = !hasSelection;
+  elements.purgeSettlementNpcsButton.disabled = !hasSelection;
+  elements.addRandomNpcButton.disabled = !hasSelection;
+  elements.specificNpcForm.querySelector("button").disabled = !hasSelection;
+
+  if (!settlement) {
+    elements.detailTitle.textContent = "Select a settlement";
+    elements.npcList.innerHTML = "";
+    return;
+  }
+
+  elements.detailTitle.textContent = settlement.name;
+  elements.detailFaction.textContent = settlement.faction || "-";
+  elements.detailPopulation.textContent = String(settlement.population ?? 0);
+  elements.detailCoords.textContent = `${settlement.xCoord}, ${settlement.yCoord}`;
+  elements.detailNpcCount.textContent = String(settlement.npcs.length);
+  elements.detailNotes.textContent = settlement.notes || "No notes recorded.";
+
+  elements.npcList.innerHTML = "";
+  if (settlement.npcs.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.innerHTML = "<div><h3>No NPCs assigned</h3><p>Add a random or specific NPC to populate this settlement.</p></div>";
+    elements.npcList.append(empty);
+    return;
+  }
+
+  settlement.npcs.forEach((npc) => {
+    const card = document.createElement("article");
+    card.className = "npc-card";
+    card.innerHTML = `
+      <div class="npc-header">
+        <div>
+          <h3>${npc.name || npc.id}</h3>
+          <span class="meta">${npc.type || "Unknown type"} • ${npc.subtype || "Unknown subtype"}</span>
+        </div>
+        <span class="pill">${npc.faction || "No faction"}</span>
+      </div>
+      <p class="meta-line"><strong>Species:</strong> ${npc.species || "-"}</p>
+      <p class="meta-line"><strong>Trait:</strong> ${npc.trait || "-"}</p>
+      <p class="meta-line"><strong>ID:</strong> ${npc.id}</p>
+      <p class="meta-line"><strong>Stats</strong></p>
+      <pre>${npc.stats || "-"}</pre>
+      <p class="meta-line"><strong>Items</strong></p>
+      <pre>${npc.items || "-"}</pre>
+      <p class="meta-line"><strong>Notes</strong></p>
+      <pre>${npc.notes || "-"}</pre>
+      <div class="button-row">
+        <button type="button" class="ghost danger">Delete NPC Record</button>
+      </div>
+    `;
+
+    card.querySelector("button").addEventListener("click", async () => {
+      if (!window.confirm(`Delete NPC ${npc.name || npc.id} from ${settlement.name}?`)) {
+        return;
+      }
+
+      await mutate(async () => getBackend().DeleteNPCFromSettlement(settlement.name, npc.id), `${npc.name || npc.id} deleted.`);
+    });
+
+    elements.npcList.append(card);
+  });
+}
+
+async function loadCreationOptions() {
+  state.creationOptions = await getBackend().GetCreationOptions();
+  populateSelect(elements.settlementFaction, state.creationOptions.factions, "Choose a faction");
+  populateSelect(elements.npcFactionSelect, state.creationOptions.factions, "Match settlement faction");
+  populateSelect(elements.npcTypeSelect, state.creationOptions.npcTypes, "Choose an NPC type");
+}
+
+async function loadSettlements() {
+  state.settlements = await getBackend().ListSettlements();
+
+  if (state.selectedName) {
+    const exists = state.settlements.some((settlement) => settlement.name === state.selectedName);
+    if (!exists) {
+      state.selectedName = state.settlements[0]?.name || "";
+    }
+  } else {
+    state.selectedName = state.settlements[0]?.name || "";
+  }
+}
+
+async function refreshSelection() {
+  if (!state.selectedName) {
+    renderStats();
+    renderSettlementList();
+    renderDetailPane();
+    return;
+  }
+
+  const updated = await getBackend().GetSettlement(state.selectedName);
+  state.settlements = state.settlements.map((settlement) => settlement.name === updated.name ? updated : settlement);
+  renderStats();
+  renderSettlementList();
+  renderDetailPane();
+}
+
+async function syncUI() {
+  await loadSettlements();
+  renderStats();
+  renderSettlementList();
+  renderDetailPane();
+}
+
+async function mutate(action, successMessage) {
+  showMessage("");
+
+  try {
+    const result = await action();
+    if (result?.name) {
+      const index = state.settlements.findIndex((settlement) => settlement.name === result.name);
+      if (index >= 0) {
+        state.settlements[index] = result;
+      } else {
+        state.settlements.unshift(result);
+      }
+      state.selectedName = result.name;
+    }
+
+    await syncUI();
+    showMessage(successMessage);
+  } catch (error) {
+    console.error(error);
+    showMessage(error?.message || String(error), "error");
+  }
+}
+
+function bindEvents() {
+  elements.randomForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const npcCount = Number(document.querySelector("#randomNpcCount").value || 0);
+    await mutate(async () => getBackend().CreateRandomSettlementWithNPCs(npcCount), "Random settlement created.");
+  });
+
+  elements.customForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      name: document.querySelector("#settlementName").value.trim(),
+      faction: elements.settlementFaction.value.trim(),
+      population: Number(document.querySelector("#settlementPopulation").value || 0),
+      initialRandomNpcCount: Number(document.querySelector("#settlementNpcCount").value || 0),
+      xCoord: Number(document.querySelector("#settlementX").value || 0),
+      yCoord: Number(document.querySelector("#settlementY").value || 0),
+      notes: document.querySelector("#settlementNotes").value.trim(),
+    };
+
+    await mutate(async () => getBackend().CreateSettlement(payload), `Settlement ${payload.name} created.`);
+    elements.customForm.reset();
+    if (state.creationOptions.factions[0]) {
+      elements.settlementFaction.value = state.creationOptions.factions[0];
+      elements.npcFactionSelect.value = state.creationOptions.factions[0];
+    }
+  });
+
+  elements.refreshButton.addEventListener("click", async () => {
+    showMessage("");
+    await syncUI();
+  });
+
+  elements.clearAllButton.addEventListener("click", async () => {
+    if (!window.confirm("Delete every stored settlement?")) {
+      return;
+    }
+
+    await mutate(async () => {
+      await getBackend().DeleteAllSettlements();
+      state.selectedName = "";
+      return null;
+    }, "All settlements removed.");
+  });
+
+  elements.deleteSettlementButton.addEventListener("click", async () => {
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+    if (!window.confirm(`Delete settlement ${settlement.name}?`)) {
+      return;
+    }
+
+    await mutate(async () => {
+      await getBackend().DeleteSettlement(settlement.name);
+      state.selectedName = "";
+      return null;
+    }, `${settlement.name} deleted.`);
+  });
+
+  elements.purgeSettlementNpcsButton.addEventListener("click", async () => {
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+    if (!window.confirm(`Delete all NPC records attached to ${settlement.name}?`)) {
+      return;
+    }
+
+    await mutate(async () => getBackend().DeleteAllNPCsFromSettlement(settlement.name), `Deleted settlement NPCs from ${settlement.name}.`);
+  });
+
+  elements.addRandomNpcButton.addEventListener("click", async () => {
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+
+    await mutate(async () => getBackend().AddRandomNPCToSettlement(settlement.name), `Random NPC added to ${settlement.name}.`);
+  });
+
+  elements.specificNpcForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const settlement = selectedSettlement();
+    if (!settlement) {
+      return;
+    }
+
+    const npcType = elements.npcTypeSelect.value;
+    const faction = elements.npcFactionSelect.value || settlement.faction;
+    await mutate(async () => getBackend().AddNPCToSettlement(settlement.name, npcType, faction), `Specific NPC added to ${settlement.name}.`);
+  });
+}
+
+async function main() {
+  try {
+    await loadCreationOptions();
+    bindEvents();
+    await syncUI();
+  } catch (error) {
+    console.error(error);
+    showMessage(error?.message || "Failed to start SettlementGen UI.", "error");
+  }
+}
+
+main();

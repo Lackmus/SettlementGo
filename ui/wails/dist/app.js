@@ -97,6 +97,20 @@ function isPresent(value) {
   return String(value ?? "").trim().length > 0;
 }
 
+function setButtonEnabled(button, enabled) {
+  if (!button) {
+    return;
+  }
+  button.disabled = !enabled;
+}
+
+function setFieldEnabled(field, enabled) {
+  if (!field) {
+    return;
+  }
+  field.disabled = !enabled;
+}
+
 function setSelectOptions(select, values, includeEmpty = true) {
   if (!select) {
     return;
@@ -153,8 +167,8 @@ function updateSubtypeDropdown(selectedType, selectedSubtype = "") {
   const subtypes = subtypeMap[selectedType] || [];
   setSelectOptions(elements.fSubtype, subtypes, true);
   setSelectValue(elements.fSubtype, selectedSubtype);
-  elements.fSubtype.disabled = !isPresent(selectedType);
-  elements.btnReroll.disabled = !isPresent(elements.fSubtype.value);
+  setFieldEnabled(elements.fSubtype, isPresent(selectedType));
+  setButtonEnabled(elements.btnReroll, isPresent(elements.fSubtype.value));
 }
 
 function updateSpeciesDropdown(selectedFaction, selectedSpecies = "") {
@@ -162,8 +176,8 @@ function updateSpeciesDropdown(selectedFaction, selectedSpecies = "") {
   const species = speciesMap[selectedFaction] || [];
   setSelectOptions(elements.fSpecies, species, true);
   setSelectValue(elements.fSpecies, selectedSpecies);
-  elements.fSpecies.disabled = !isPresent(selectedFaction);
-  elements.btnRerollName.disabled = !isPresent(elements.fSpecies.value);
+  setFieldEnabled(elements.fSpecies, isPresent(selectedFaction));
+  setButtonEnabled(elements.btnRerollName, isPresent(elements.fSpecies.value));
 }
 
 function setNpcForm(npc) {
@@ -179,6 +193,9 @@ function setNpcForm(npc) {
   elements.fStats.textContent = npc?.stats || "-";
   elements.fItems.textContent = npc?.items || "-";
   elements.fNotes.value = npc?.notes || "";
+
+  setButtonEnabled(elements.btnReroll, isPresent(elements.fSubtype.value));
+  setButtonEnabled(elements.btnRerollName, isPresent(elements.fSpecies.value));
 }
 
 function readNpcForm() {
@@ -223,10 +240,12 @@ function renderNpcDetails() {
   if (!npc) {
     elements.npcDetails.classList.add("hidden");
     elements.npcForm.classList.add("hidden");
+    setButtonEnabled(elements.btnEditNpcDetail, false);
     return;
   }
 
   showNpcDetailsPanel();
+  setButtonEnabled(elements.btnEditNpcDetail, isPresent(npc.id));
   elements.dName.textContent = textOrDash(npc.name);
   elements.dType.textContent = textOrDash(npc.type);
   elements.dSubtype.textContent = textOrDash(npc.subtype);
@@ -429,6 +448,12 @@ async function loadCreationOptions() {
   setSelectOptions(elements.fTraits, state.creationOptions.traits, true);
   updateSubtypeDropdown("");
   updateSpeciesDropdown("");
+
+  setFieldEnabled(elements.fSubtype, false);
+  setFieldEnabled(elements.fSpecies, false);
+  setButtonEnabled(elements.btnReroll, false);
+  setButtonEnabled(elements.btnRerollName, false);
+  setButtonEnabled(elements.btnEditNpcDetail, false);
 }
 
 async function loadSettlements() {
@@ -592,6 +617,7 @@ function bindEvents() {
 
   elements.btnEditNpcDetail.addEventListener("click", () => {
     if (!selectedNpc()) {
+      showMessage("Select an NPC first.", "error");
       return;
     }
     showNpcEditPanel();
@@ -609,7 +635,7 @@ function bindEvents() {
   });
 
   elements.fSubtype.addEventListener("change", async () => {
-    elements.btnReroll.disabled = !isPresent(elements.fSubtype.value);
+    setButtonEnabled(elements.btnReroll, isPresent(elements.fSubtype.value));
     try {
       await applySubtypeRoll(elements.fSubtype.value);
     } catch (error) {
@@ -618,7 +644,7 @@ function bindEvents() {
   });
 
   elements.fSpecies.addEventListener("change", async () => {
-    elements.btnRerollName.disabled = !isPresent(elements.fSpecies.value);
+    setButtonEnabled(elements.btnRerollName, isPresent(elements.fSpecies.value));
     try {
       await applySpeciesNameRoll(elements.fSpecies.value);
     } catch (error) {
@@ -650,9 +676,21 @@ function bindEvents() {
 
   elements.btnSaveNpc.addEventListener("click", async () => {
     const payload = readNpcForm();
-    const required = [payload.name, payload.type, payload.subtype, payload.species, payload.faction, payload.trait];
-    if (!required.every((value) => isPresent(value))) {
-      showMessage("Please fill all NPC fields before saving.", "error");
+    const checks = [
+      ["name", payload.name],
+      ["type", payload.type],
+      ["subtype", payload.subtype],
+      ["species", payload.species],
+      ["faction", payload.faction],
+      ["trait", payload.trait],
+    ];
+    const missing = checks.filter(([, value]) => !isPresent(value)).map(([label]) => label);
+    if (missing.length > 0) {
+      showMessage(`Please fill all fields before saving. Missing: ${missing.join(", ")}`, "error");
+      return;
+    }
+    if (!isPresent(payload.id)) {
+      showMessage("No ID present. Select an NPC first.", "error");
       return;
     }
 

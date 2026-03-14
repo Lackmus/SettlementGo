@@ -35,6 +35,7 @@ const elements = {
   emptyState: document.querySelector("#emptyState"),
   detailContent: document.querySelector("#detailContent"),
   detailTitle: document.querySelector("#detailTitle"),
+  detailName: document.querySelector("#detailName"),
   detailFaction: document.querySelector("#detailFaction"),
   detailPopulation: document.querySelector("#detailPopulation"),
   detailNpcCount: document.querySelector("#detailNpcCount"),
@@ -43,11 +44,7 @@ const elements = {
   npcPanelEmptyState: document.querySelector("#npcPanelEmptyState"),
   npcPanelContent: document.querySelector("#npcPanelContent"),
   editSettlementButton: document.querySelector("#editSettlementButton"),
-  settlementEditForm: document.querySelector("#settlementEditForm"),
-  editSettlementName: document.querySelector("#editSettlementName"),
-  editSettlementFaction: document.querySelector("#editSettlementFaction"),
-  editSettlementPopulation: document.querySelector("#editSettlementPopulation"),
-  editSettlementNotes: document.querySelector("#editSettlementNotes"),
+  saveSettlementButton: document.querySelector("#saveSettlementButton"),
   cancelSettlementEditButton: document.querySelector("#cancelSettlementEditButton"),
   deleteSettlementButton: document.querySelector("#deleteSettlementButton"),
   purgeSettlementNpcsButton: document.querySelector("#purgeSettlementNpcsButton"),
@@ -90,16 +87,23 @@ const elements = {
 
 function setSettlementEditMode(enabled) {
   state.editingSettlement = enabled;
-  elements.settlementEditForm.classList.toggle("hidden", !enabled);
+  elements.detailName.readOnly = !enabled;
+  elements.detailPopulation.readOnly = !enabled;
+  elements.detailNotes.readOnly = !enabled;
+  elements.detailFaction.disabled = !enabled;
+
   elements.editSettlementButton.classList.toggle("hidden", enabled);
+  elements.deleteSettlementButton.classList.toggle("hidden", enabled);
+  elements.saveSettlementButton.classList.toggle("hidden", !enabled);
+  elements.cancelSettlementEditButton.classList.toggle("hidden", !enabled);
 }
 
 function readSettlementEditForm() {
   return {
-    name: elements.editSettlementName.value.trim(),
-    faction: elements.editSettlementFaction.value.trim(),
-    population: Number(elements.editSettlementPopulation.value || 0),
-    notes: elements.editSettlementNotes.value.trim(),
+    name: elements.detailName.value.trim(),
+    faction: elements.detailFaction.value.trim(),
+    population: Number(elements.detailPopulation.value || 0),
+    notes: elements.detailNotes.value.trim(),
   };
 }
 
@@ -126,17 +130,21 @@ function confirmDiscardSettlementEdits(settlement) {
 
 function populateSettlementEditForm(settlement) {
   if (!settlement) {
-    elements.editSettlementName.value = "";
-    elements.editSettlementFaction.value = "";
-    elements.editSettlementPopulation.value = "0";
-    elements.editSettlementNotes.value = "";
+    elements.detailName.value = "-";
+    elements.detailFaction.value = "";
+    elements.detailPopulation.value = "0";
+    elements.detailNpcCount.value = "0";
+    elements.detailNotes.value = "-";
+    elements.detailTitle.textContent = "Select a settlement";
     return;
   }
 
-  elements.editSettlementName.value = settlement.name || "";
-  setSelectValue(elements.editSettlementFaction, settlement.faction || "");
-  elements.editSettlementPopulation.value = String(settlement.population ?? 0);
-  elements.editSettlementNotes.value = settlement.notes || "";
+  elements.detailTitle.textContent = settlement.name || "Select a settlement";
+  elements.detailName.value = settlement.name || "";
+  setSelectValue(elements.detailFaction, settlement.faction || "");
+  elements.detailPopulation.value = String(settlement.population ?? 0);
+  elements.detailNpcCount.value = String(settlement.npcs?.length ?? 0);
+  elements.detailNotes.value = settlement.notes || "No notes recorded.";
 }
 
 function selectedNpc() {
@@ -452,18 +460,12 @@ function renderDetailPane() {
   if (!settlement) {
     setSettlementEditMode(false);
     populateSettlementEditForm(null);
-    elements.detailTitle.textContent = "Select a settlement";
     elements.npcList.innerHTML = "";
     elements.npcDetails.classList.add("hidden");
     elements.npcForm.classList.add("hidden");
     return;
   }
 
-  elements.detailTitle.textContent = settlement.name;
-  elements.detailFaction.value = settlement.faction || "-";
-  elements.detailPopulation.value = String(settlement.population ?? 0);
-  elements.detailNpcCount.value = String(settlement.npcs.length);
-  elements.detailNotes.value = settlement.notes || "No notes recorded.";
   populateSettlementEditForm(settlement);
 
   elements.npcList.innerHTML = "";
@@ -538,7 +540,7 @@ function renderDetailPane() {
 async function loadCreationOptions() {
   state.creationOptions = await getBackend().GetCreationOptions();
   populateSelect(elements.settlementFaction, state.creationOptions.factions, "Choose a faction");
-  populateSelect(elements.editSettlementFaction, state.creationOptions.factions, "Choose a faction");
+  populateSelect(elements.detailFaction, state.creationOptions.factions, "Choose a faction");
   populateSelect(elements.npcFactionSelect, state.creationOptions.factions, "Match settlement faction");
   populateSelect(elements.npcTypeSelect, state.creationOptions.npcTypes, "Choose an NPC type");
   setSelectOptions(elements.fType, state.creationOptions.npcTypes, true);
@@ -667,8 +669,7 @@ function bindEvents() {
     setSettlementEditMode(false);
   });
 
-  elements.settlementEditForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  elements.saveSettlementButton.addEventListener("click", async () => {
     const settlement = selectedSettlement();
     if (!settlement) {
       return;

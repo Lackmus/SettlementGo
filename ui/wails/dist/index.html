@@ -12,7 +12,7 @@
     <section class="hero panel">
       <div>
         <p class="eyebrow">Wails Desktop</p>
-        <h1>SettlementGen</h1>
+        <h1>Settlement Generator</h1>
         <p class="lede">Generate settlements, attach NPCs from the existing NPCGen behavior, and inspect everything in one desktop view.</p>
       </div>
 
@@ -49,8 +49,12 @@
         <div id="detailContent" class="hidden stack">
           <div class="form-grid">
             <label>
+              Name
+              <input id="detailName" readonly value="-" />
+            </label>
+            <label>
               Faction
-              <input id="detailFaction" readonly value="-" />
+              <select id="detailFaction" disabled></select>
             </label>
             <label>
               Population
@@ -70,32 +74,9 @@
           <div class="button-row compact">
             <button id="editSettlementButton" type="button" disabled>Edit Settlement</button>
             <button id="deleteSettlementButton" class="danger ghost" disabled>Delete Settlement</button>
+            <button id="saveSettlementButton" type="button" class="hidden">Save Settlement</button>
+            <button id="cancelSettlementEditButton" type="button" class="ghost hidden">Cancel</button>
           </div>
-
-          <form id="settlementEditForm" class="stack hidden">
-            <div class="form-grid">
-              <label>
-                Name
-                <input id="editSettlementName" maxlength="80" required />
-              </label>
-              <label>
-                Faction
-                <select id="editSettlementFaction"></select>
-              </label>
-              <label>
-                Population
-                <input id="editSettlementPopulation" type="number" min="0" />
-              </label>
-            </div>
-            <label>
-              Notes
-              <textarea id="editSettlementNotes" class="notes-field" rows="10" cols="50" maxlength="500"></textarea>
-            </label>
-            <div class="button-row">
-              <button id="saveSettlementButton" type="submit">Save Settlement</button>
-              <button id="cancelSettlementEditButton" type="button" class="ghost">Cancel</button>
-            </div>
-          </form>
         </div>
       </section>
 

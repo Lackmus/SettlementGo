@@ -1,3 +1,5 @@
+import { textOrDash, isPresent, validatePayload } from "./npc-shared-core.js";
+
 function getBackend() {
   const api = window?.go?.main?.WailsAPI;
   if (!api) {
@@ -88,13 +90,21 @@ function clearNpcDetailSelection() {
   state.selectedNpcSnapshot = null;
 }
 
-function textOrDash(value) {
-  const normalized = String(value ?? "").trim();
-  return normalized || "-";
-}
-
-function isPresent(value) {
-  return String(value ?? "").trim().length > 0;
+function clearNpcFormState() {
+  elements.fId.value = "";
+  elements.fName.value = "";
+  setSelectValue(elements.fType, "");
+  setSelectValue(elements.fSubtype, "");
+  setSelectValue(elements.fSpecies, "");
+  setSelectValue(elements.fFaction, "");
+  setSelectValue(elements.fTraits, "");
+  elements.fStats.textContent = "—";
+  elements.fItems.textContent = "—";
+  elements.fNotes.value = "";
+  setFieldEnabled(elements.fSubtype, false);
+  setFieldEnabled(elements.fSpecies, false);
+  setButtonEnabled(elements.btnReroll, false);
+  setButtonEnabled(elements.btnRerollName, false);
 }
 
 function setButtonEnabled(button, enabled) {
@@ -190,8 +200,8 @@ function setNpcForm(npc) {
   updateSpeciesDropdown(npc?.faction || "", npc?.species || "");
   const trait = (npc?.trait || "").split(",")[0]?.trim() || "";
   setSelectValue(elements.fTraits, trait);
-  elements.fStats.textContent = npc?.stats || "-";
-  elements.fItems.textContent = npc?.items || "-";
+  elements.fStats.textContent = npc?.stats || "—";
+  elements.fItems.textContent = npc?.items || "—";
   elements.fNotes.value = npc?.notes || "";
 
   setButtonEnabled(elements.btnReroll, isPresent(elements.fSubtype.value));
@@ -209,21 +219,21 @@ function readNpcForm() {
     species: elements.fSpecies.value || "",
     faction: elements.fFaction.value || "",
     trait: elements.fTraits.value || "",
-    stats: statsValue === "-" ? "" : statsValue,
-    items: itemsValue === "-" ? "" : itemsValue,
+    stats: statsValue === "—" ? "" : statsValue,
+    items: itemsValue === "—" ? "" : itemsValue,
     notes: elements.fNotes.value || "",
   };
 }
 
 async function applySubtypeRoll(subtype) {
   if (!isPresent(subtype)) {
-    elements.fStats.textContent = "-";
-    elements.fItems.textContent = "-";
+    elements.fStats.textContent = "—";
+    elements.fItems.textContent = "—";
     return;
   }
   const rolled = await getBackend().RollSubtypeFields(subtype);
-  elements.fStats.textContent = rolled?.stats || rolled?.Stats || "-";
-  elements.fItems.textContent = rolled?.items || rolled?.Items || "-";
+  elements.fStats.textContent = rolled?.stats || rolled?.Stats || "—";
+  elements.fItems.textContent = rolled?.items || rolled?.Items || "—";
 }
 
 async function applySpeciesNameRoll(species) {
@@ -238,7 +248,16 @@ async function applySpeciesNameRoll(species) {
 function renderNpcDetails() {
   const npc = selectedNpc();
   if (!npc) {
-    elements.npcDetails.classList.add("hidden");
+    showNpcDetailsPanel();
+    elements.dName.textContent = "—";
+    elements.dType.textContent = "—";
+    elements.dSubtype.textContent = "—";
+    elements.dSpecies.textContent = "—";
+    elements.dFaction.textContent = "—";
+    elements.dTraits.textContent = "—";
+    elements.dStats.textContent = "—";
+    elements.dItems.textContent = "—";
+    elements.dNotes.textContent = "—";
     elements.npcForm.classList.add("hidden");
     setButtonEnabled(elements.btnEditNpcDetail, false);
     return;
@@ -368,6 +387,7 @@ function renderDetailPane() {
     elements.detailTitle.textContent = "Select a settlement";
     elements.npcList.innerHTML = "";
     elements.npcDetails.classList.add("hidden");
+    elements.npcForm.classList.add("hidden");
     return;
   }
 
@@ -397,28 +417,36 @@ function renderDetailPane() {
     card.innerHTML = `
       <div class="npc-header">
         <div>
-          <h3>${npc.name || npc.id}</h3>
+          <h3 class="npc-name" role="button" tabindex="0">${npc.name || npc.id}</h3>
           <span class="meta">${npc.type || "Unknown type"} • ${npc.subtype || "Unknown subtype"}</span>
         </div>
         <span class="pill">${npc.species || "Unknown species"}</span>
       </div>
       <p class="meta-line"><strong>Faction:</strong> ${npc.faction || "-"}</p>
       <div class="button-row">
-        <button type="button" class="ghost">View</button>
         <button type="button" class="ghost danger">Delete NPC Record</button>
       </div>
     `;
 
-    const buttons = card.querySelectorAll("button");
+    const nameButton = card.querySelector(".npc-name");
+    const deleteButton = card.querySelector("button");
 
-    buttons[0].addEventListener("click", async () => {
+    const openDetails = async () => {
       const loaded = await getBackend().GetNPC(npc.id);
       state.selectedNpcId = loaded.id || npc.id;
       setNpcForm(loaded);
       renderDetailPane();
+    };
+
+    nameButton.addEventListener("click", openDetails);
+    nameButton.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        await openDetails();
+      }
     });
 
-    buttons[1].addEventListener("click", async () => {
+    deleteButton.addEventListener("click", async () => {
       if (!window.confirm(`Delete NPC ${npc.name || npc.id} from ${settlement.name}?`)) {
         return;
       }
@@ -612,12 +640,13 @@ function bindEvents() {
 
   elements.btnCloseNpcDetail.addEventListener("click", () => {
     clearNpcDetailSelection();
+    clearNpcFormState();
     renderNpcDetails();
   });
 
   elements.btnEditNpcDetail.addEventListener("click", () => {
     if (!selectedNpc()) {
-      showMessage("Select an NPC first.", "error");
+      window.alert("Select an NPC first.");
       return;
     }
     showNpcEditPanel();
@@ -625,8 +654,8 @@ function bindEvents() {
 
   elements.fType.addEventListener("change", () => {
     updateSubtypeDropdown(elements.fType.value);
-    elements.fStats.textContent = "-";
-    elements.fItems.textContent = "-";
+    elements.fStats.textContent = "—";
+    elements.fItems.textContent = "—";
   });
 
   elements.fFaction.addEventListener("change", () => {
@@ -639,7 +668,7 @@ function bindEvents() {
     try {
       await applySubtypeRoll(elements.fSubtype.value);
     } catch (error) {
-      showMessage(error?.message || "Failed to roll subtype fields", "error");
+      window.alert(error?.message || "Failed to roll subtype fields.");
     }
   });
 
@@ -648,49 +677,43 @@ function bindEvents() {
     try {
       await applySpeciesNameRoll(elements.fSpecies.value);
     } catch (error) {
-      showMessage(error?.message || "Failed to roll species name", "error");
+      window.alert(error?.message || "Failed to roll species name.");
     }
   });
 
   elements.btnReroll.addEventListener("click", async () => {
     if (!isPresent(elements.fSubtype.value)) {
+      window.alert("Select a subtype first.");
       return;
     }
     try {
       await applySubtypeRoll(elements.fSubtype.value);
     } catch (error) {
-      showMessage(error?.message || "Failed to reroll subtype fields", "error");
+      window.alert(error?.message || "Failed to reroll subtype fields.");
     }
   });
 
   elements.btnRerollName.addEventListener("click", async () => {
     if (!isPresent(elements.fSpecies.value)) {
+      window.alert("Select a species first.");
       return;
     }
     try {
       await applySpeciesNameRoll(elements.fSpecies.value);
     } catch (error) {
-      showMessage(error?.message || "Failed to reroll name", "error");
+      window.alert(error?.message || "Failed to reroll name.");
     }
   });
 
   elements.btnSaveNpc.addEventListener("click", async () => {
     const payload = readNpcForm();
-    const checks = [
-      ["name", payload.name],
-      ["type", payload.type],
-      ["subtype", payload.subtype],
-      ["species", payload.species],
-      ["faction", payload.faction],
-      ["trait", payload.trait],
-    ];
-    const missing = checks.filter(([, value]) => !isPresent(value)).map(([label]) => label);
-    if (missing.length > 0) {
-      showMessage(`Please fill all fields before saving. Missing: ${missing.join(", ")}`, "error");
+    const validation = validatePayload(payload);
+    if (!validation.ok) {
+      window.alert(`Please fill all fields before saving. Missing: ${validation.missing.join(", ")}`);
       return;
     }
     if (!isPresent(payload.id)) {
-      showMessage("No ID present. Select an NPC first.", "error");
+      window.alert("No ID present. Select an NPC first.");
       return;
     }
 

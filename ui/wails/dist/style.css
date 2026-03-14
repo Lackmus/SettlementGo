@@ -430,6 +430,14 @@ button.danger {
   font-size: 1rem;
 }
 
+.npc-card .npc-name {
+  cursor: pointer;
+}
+
+.npc-card .npc-name:hover {
+  color: #c2e6ff;
+}
+
 .npc-card .button-row {
   margin-top: 14px;
 }

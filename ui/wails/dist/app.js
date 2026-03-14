@@ -91,6 +91,36 @@ function setSettlementEditMode(enabled) {
   elements.editSettlementButton.classList.toggle("hidden", enabled);
 }
 
+function readSettlementEditForm() {
+  return {
+    name: elements.editSettlementName.value.trim(),
+    faction: elements.editSettlementFaction.value.trim(),
+    population: Number(elements.editSettlementPopulation.value || 0),
+    notes: elements.editSettlementNotes.value.trim(),
+  };
+}
+
+function isSettlementEditDirty(settlement) {
+  if (!state.editingSettlement || !settlement) {
+    return false;
+  }
+
+  const current = readSettlementEditForm();
+  return (
+    current.name !== String(settlement.name || "").trim() ||
+    current.faction !== String(settlement.faction || "").trim() ||
+    current.population !== Number(settlement.population ?? 0) ||
+    current.notes !== String(settlement.notes || "").trim()
+  );
+}
+
+function confirmDiscardSettlementEdits(settlement) {
+  if (!isSettlementEditDirty(settlement)) {
+    return true;
+  }
+  return window.confirm("Discard unsaved settlement changes?");
+}
+
 function populateSettlementEditForm(settlement) {
   if (!settlement) {
     elements.editSettlementName.value = "";
@@ -392,7 +422,11 @@ function renderSettlementList() {
     `;
 
     card.querySelector("button").addEventListener("click", async () => {
+      if (!confirmDiscardSettlementEdits(selectedSettlement())) {
+        return;
+      }
       state.selectedName = settlement.name;
+      setSettlementEditMode(false);
       clearNpcDetailSelection();
       await refreshSelection();
     });
@@ -606,6 +640,9 @@ function bindEvents() {
   });
 
   elements.refreshButton.addEventListener("click", async () => {
+    if (!confirmDiscardSettlementEdits(selectedSettlement())) {
+      return;
+    }
     showMessage("");
     setSettlementEditMode(false);
     await syncUI();
@@ -621,6 +658,9 @@ function bindEvents() {
   });
 
   elements.cancelSettlementEditButton.addEventListener("click", () => {
+    if (!confirmDiscardSettlementEdits(selectedSettlement())) {
+      return;
+    }
     populateSettlementEditForm(selectedSettlement());
     setSettlementEditMode(false);
   });
@@ -634,10 +674,7 @@ function bindEvents() {
 
     const payload = {
       originalName: settlement.name,
-      name: elements.editSettlementName.value.trim(),
-      faction: elements.editSettlementFaction.value.trim(),
-      population: Number(elements.editSettlementPopulation.value || 0),
-      notes: elements.editSettlementNotes.value.trim(),
+      ...readSettlementEditForm(),
     };
 
     if (!isPresent(payload.name)) {

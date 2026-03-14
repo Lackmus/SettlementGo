@@ -695,9 +695,6 @@ function bindEvents() {
   });
 
   elements.clearAllButton.addEventListener("click", async () => {
-    if (!confirmDiscardSettlementEdits(selectedSettlement())) {
-      return;
-    }
     if (!window.confirm("Delete every stored settlement?")) {
       return;
     }
@@ -716,9 +713,6 @@ function bindEvents() {
     if (!settlement) {
       return;
     }
-    if (!confirmDiscardSettlementEdits(settlement)) {
-      return;
-    }
     if (!window.confirm(`Delete settlement ${settlement.name}?`)) {
       return;
     }
@@ -735,9 +729,6 @@ function bindEvents() {
   elements.purgeSettlementNpcsButton.addEventListener("click", async () => {
     const settlement = selectedSettlement();
     if (!settlement) {
-      return;
-    }
-    if (!confirmDiscardSettlementEdits(settlement)) {
       return;
     }
     if (!window.confirm(`Delete all NPC records attached to ${settlement.name}?`)) {

@@ -185,10 +185,13 @@
 
             <form id="npcForm" class="npc-form hidden">
               <input type="hidden" id="f_id" value="" />
-              <label>
-                Name
-                <input id="f_name" />
-              </label>
+              <div class="name-row">
+                <label>
+                  Name
+                  <input id="f_name" />
+                </label>
+                <button type="button" id="btnRerollName">Reroll Name</button>
+              </div>
               <label>
                 Type
                 <select id="f_type"></select>
@@ -217,7 +220,6 @@
               </label>
               <div class="button-row">
                 <button type="button" id="btnReroll">Reroll Stats/Items</button>
-                <button type="button" id="btnRerollName">Reroll Name</button>
                 <button type="button" id="btnSaveNpc">Save</button>
                 <button type="button" id="btnCancelNpcEdit" class="ghost">Cancel</button>
               </div>

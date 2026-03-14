@@ -407,6 +407,17 @@ button.danger {
   font-size: 0.86rem;
 }
 
+.npc-form .name-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.npc-form .name-row button {
+  white-space: nowrap;
+}
+
 .detail-row {
   display: grid;
   gap: 4px;
@@ -486,6 +497,10 @@ button.danger {
   .detail-grid,
   .npc-list,
   .inline-form {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-form .name-row {
     grid-template-columns: 1fr;
   }
 
